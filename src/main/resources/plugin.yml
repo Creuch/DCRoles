@@ -1,0 +1,26 @@
+name: DCRoles
+version: '${project.version}'
+main: me.creuch.dcroles.DCRoles
+api-version: '1.19'
+website: https://wolfservers.pl/
+authors:
+  - _Creuch
+
+permissions:
+  dcr.*:
+    default: op
+    children: [dcr.reload]
+  dcr.reload:
+    default: op
+  dcr.dcmcode:
+    default: op
+  dcr.dccode.self:
+    default: true
+  dcr.dccode.others:
+    default: op
+
+commands:
+  dcreload:
+    description: "Reloads the plugin"
+  dccode:
+    description: "Shows user's code"

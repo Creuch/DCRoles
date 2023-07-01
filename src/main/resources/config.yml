@@ -14,14 +14,19 @@ sql:
   dbUsername: root
   dbPassword: XXX
 
-messages:
-  # HEX - <#XXXXXX>
+text:
   # PREFIX - {P}
-  prefix: "<#0073fb>&lD<#0083fc>&lC<#0093fd>&lR &8» &r"
+  prefix: "<#0039D1>&lD<#111DE8>&lC<#2200FF>&lR &8» &r"
   # Replaces 'default' value from database (By default to 'Gracz')
   defualtRoleReplace: "Gracz"
   # Null value
   null: Brak
+  # Code manage inventory name
+  codeManageInvName: "<#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
+
+
+messages:
+  # HEX - <#XXXXXX>
   # Plugin start
   pluginEnabling: "{P}&9 Włączanie pluginu..."
   pluginDisabling: "{P}&9 Wyłączanie pluginu..."
@@ -30,6 +35,7 @@ messages:
   botLoaded: "{P}&a Bot został załadowany &8[&7{BOTNAME}&8]"
   playerNotFound: "{P}&c Nie znaleziono takiego gracza"
   executorNotPlayer: "{P}&c Tylko gracz może to zrobić"
+  removedUser: "{P}&f Pomyślnie usunięto gracza &7{USER}"
   helpFormat:
     - "&8≡≡═════ {P} &8═════≡≡"
     - "{P} &9/dccode &8-&f Pokazuje kod użytkownika"

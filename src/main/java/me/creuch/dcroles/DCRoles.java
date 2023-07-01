@@ -4,8 +4,10 @@ import me.creuch.dcroles.bot.BotLoad;
 import me.creuch.dcroles.commands.DCCode;
 import me.creuch.dcroles.commands.DCMCode;
 import me.creuch.dcroles.commands.DCReload;
+import me.creuch.dcroles.events.onInventoryClick;
 import me.creuch.dcroles.events.onJoinEvent;
 import me.creuch.dcroles.functions.Messages;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -13,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -52,16 +55,26 @@ public final class DCRoles extends JavaPlugin {
         return conn;
     }
 
-    public static String getCode(Player p) {
+    public static String getData(OfflinePlayer p, String type) {
         try {
             Connection conn = dbConnect(instance.getServer().getConsoleSender());
             Statement stmt = conn.createStatement();
             ResultSet getPlayer = stmt.executeQuery(String.format("SELECT * FROM discordRoles WHERE username = '%s'", p.getName()));
-            String code = instance.getConfig().getString("messages.null");
-            if (getPlayer.next()) {
-                code = getPlayer.getString("code");
+            String data = instance.getConfig().getString("text.null");
+            if(Objects.equals(type, "code")) {
+                if (getPlayer.next()) {
+                    data = getPlayer.getString("code");
+                }
+            } else if(Objects.equals(type, "rank")) {
+                if (getPlayer.next()) {
+                    data = getPlayer.getString("role");
+                }
+            } else if(Objects.equals(type, "used")) {
+                if (getPlayer.next()) {
+                    data = getPlayer.getString("used");
+                }
             }
-            return code;
+            return data;
         } catch(SQLException e) {
             e.printStackTrace();
         }
@@ -73,10 +86,11 @@ public final class DCRoles extends JavaPlugin {
         instance.reloadConfig();
         config = instance.getConfig();
         sender.sendMessage(Messages.getMessage(config.getString("messages.pluginEnabling")));
-        instance.getCommand("dcreload").setExecutor(new DCMCode());
+        instance.getCommand("dcmcode").setExecutor(new DCMCode());
         instance.getCommand("dcreload").setExecutor(new DCReload());
         instance.getCommand("dccode").setExecutor(new DCCode());
         instance.getServer().getPluginManager().registerEvents(new onJoinEvent(), instance);
+        instance.getServer().getPluginManager().registerEvents(new onInventoryClick(), instance);
         BotLoad.login(sender);
         try {
             conn = dbConnect(sender);
@@ -112,3 +126,4 @@ public final class DCRoles extends JavaPlugin {
         instance.getServer().getConsoleSender().sendMessage(Messages.getMessage(config.getString("messages.pluginDisabling")));
     }
 }
+

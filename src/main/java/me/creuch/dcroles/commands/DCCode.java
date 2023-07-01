@@ -23,7 +23,7 @@ public class DCCode implements CommandExecutor {
             if (strings.length == 0) {
                 if (commandSender instanceof Player) {
                     if (commandSender.hasPermission("dcr.dccode.self")) {
-                        String code = DCRoles.getCode((Player) commandSender);
+                        String code = DCRoles.getData((Player) commandSender, "code");
                         List<String> messages = instance.getConfig().getStringList("messages.selfDCCode");
                         for (String msg : messages) {
                             msg = msg.replace("{CODE}", code);
@@ -42,7 +42,7 @@ public class DCCode implements CommandExecutor {
                         commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound")));
                         return true;
                     }
-                    String code = DCRoles.getCode(p);
+                    String code = DCRoles.getData(p, "code");
                     List<String> messages = instance.getConfig().getStringList("messages.argDCCode");
                     for (String msg1 : messages) {
                         msg1 = msg1.replace("{CODE}", code);

@@ -20,6 +20,8 @@ permissions:
     default: op
 
 commands:
+  dcmcode:
+    description: "Manages user's code"
   dcreload:
     description: "Reloads the plugin"
   dccode:

@@ -32,7 +32,7 @@ public class onJoinEvent implements Listener {
             Long code = DCRoles.generateCode();
             List<String> messages = instance.getConfig().getStringList("messages.firstJoin");
             for(String s : messages) {
-                s = s.replace("{RANK}", instance.getConfig().getString("messages.defualtRoleReplace"));
+                s = s.replace("{RANK}", instance.getConfig().getString("text.defualtRoleReplace"));
                 s = s.replace("{CODE}", code.toString());
                 e.getPlayer().sendMessage(Messages.getMessage(s));
             }

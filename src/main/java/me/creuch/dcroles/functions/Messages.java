@@ -35,7 +35,7 @@ public class Messages {
         msg = msg.replace("&n", "<u>");
         msg = msg.replace("&o", "<italic>");
         msg = msg.replace("&r", "<reset>");
-        msg = msg.replace("{P}", instance.getConfig().getString("messages.prefix"));
+        msg = msg.replace("{P}", instance.getConfig().getString("text.prefix"));
         return msg;
 
     }

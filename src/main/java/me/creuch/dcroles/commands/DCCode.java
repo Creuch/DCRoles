@@ -9,16 +9,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 public class DCCode implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (command.getName().equalsIgnoreCase("dccode")) {
+            assert DCRoles.checkPluginStatus(commandSender);
             DCRoles instance = DCRoles.instance;
             if (strings.length == 0) {
                 if (commandSender instanceof Player) {

@@ -38,6 +38,8 @@ public class onJoinEvent implements Listener {
             }
             Integer createPlayerRank = stmt.executeUpdate(String.format("INSERT INTO discordRoles(username, role, code, used) VALUES('%s', 'default', '%s', false)", e.getPlayer().getName(), code));
         }
-    conn.close();
+        conn.close();
+        checkIfPlayerExist.close();
+        stmt.close();
     }
 }

@@ -16,8 +16,8 @@ sql:
 
 text:
   # PREFIX - {P}
-  prefix: "<#0039D1>&lD<#111DE8>&lC<#2200FF>&lR &8» &r"
-  # Replaces 'default' value from database (By default to 'Gracz')
+  prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8» &r"
+  # Replaces 'default' value from database
   defualtRoleReplace: "Gracz"
   # Null value
   null: Brak
@@ -33,23 +33,28 @@ messages:
   pluginEnabled: "{P}&7 {PLUGIN} &azostał włączony!"
   pluginDisabled: "{P}&c Coś poszło nie tak! Popraw błędy i przeładuj plugin."
   botLoaded: "{P}&a Bot został załadowany &8[&7{BOTNAME}&8]"
+  connNotClosed: "{P}&c Połączenie z bazą danych nie jest zamknięte!"
   playerNotFound: "{P}&c Nie znaleziono takiego gracza"
   executorNotPlayer: "{P}&c Tylko gracz może to zrobić"
-  removedUser: "{P}&f Pomyślnie usunięto gracza &7{USER}"
+  removedUser: "{P}&a Pomyślnie usunięto gracza &7{USER}"
+  codeUsageReset: "{P}&9 Zresetowano uzycie kodu dla Gracza &f{USER}"
+  grantRank: "{P}&9 <click:suggestcommand:dcmcode {USER} grantRank <RANGA>><hover:show_text:\"&8klik.\">&9Kliknij, aby nadać rangę graczowi &7{USER}"
+  newCode: "{P}&9 Wygenerowano kod &7{CODE}&9 dla użytkownika&f {USER}"
   helpFormat:
-    - "&8≡≡═════ {P} &8═════≡≡"
-    - "{P} &9/dccode &8-&f Pokazuje kod użytkownika"
-    - "&8≡≡═════ {P} &8═════≡≡"
+    - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
+    - "&8» &9/dccode [Nick]&8-&f Pokazuje kod Gracza"
+    - "&8» &9/dcmcode <Nick> &8-&f Zarządza kodem Gracza"
+    - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
   firstJoin:
     - "{P} &7Nadano rangę&f {RANK}"
     - "{P} &7Wygenerowano kod:&f {CODE}"
   # DCRCode output, when showing sender's code
   selfDCCode:
     - "{P} <#1FFDFD>Twój kod:"
-    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"<u>Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
+    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
   # DCCode output, when showing other person's code
   argDCCode:
     - "{P} <#1FFDFD>Kod&7 {USER}:"
-    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"<u>Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
+    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
 
   noPermission: "{P}&c Nie masz permisji."

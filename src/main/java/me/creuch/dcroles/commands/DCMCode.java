@@ -25,6 +25,7 @@ public class DCMCode implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if(command.getName().equalsIgnoreCase("dcmcode")) {
+            assert DCRoles.checkPluginStatus(commandSender);
             DCRoles instance = DCRoles.instance;
             if(commandSender.hasPermission("dcr.dcmcode")) {
                 if(strings.length == 0) {
@@ -51,12 +52,12 @@ public class DCMCode implements CommandExecutor {
         return true;
     }
 
-    public Inventory getManageGUI(String pName, OfflinePlayer p) {
+    public static Inventory getManageGUI(String pName, OfflinePlayer p) {
         String code = DCRoles.getData(p, "code");
         String rank = DCRoles.getData(p, "rank");
         Boolean used = Boolean.valueOf(DCRoles.getData(p, "used"));
         DCRoles instance = DCRoles.instance;
-        Inventory inv = Bukkit.createInventory(null, 27, Messages.getMessage(instance.getConfig().getString("text.codeManageInvName").replace("{USER}", pName)));
+        Inventory inv = Bukkit.createInventory(null, 36, Messages.getMessage(instance.getConfig().getString("text.codeManageInvName").replace("{USER}", pName)));
         // Background of the inventory
         for(int i = 0; i < inv.getSize(); i++) {
             ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
@@ -82,11 +83,37 @@ public class DCMCode implements CommandExecutor {
         ItemMeta itemMeta = item.getItemMeta();
         itemMeta.displayName(Messages.getMessage("&c&lUsuń użytkownika").decoration(TextDecoration.ITALIC, false));
         lore.clear();
-        lore.add((Messages.getMessage("&7Usuwa całkowicie z bazy danych").decoration(TextDecoration.ITALIC, false)));
+        lore.add((Messages.getMessage("&8» &7Usuwa dane użytkownika z bazy danych").decoration(TextDecoration.ITALIC, false)));
         itemMeta.lore(lore);
         item.setItemMeta(itemMeta);
         inv.setItem(11, item);
         // Reload user's code
+        item = new ItemStack(Material.ENDER_PEARL, 1);
+        itemMeta = item.getItemMeta();
+        itemMeta.displayName(Messages.getMessage("&9&lNowy kod").decoration(TextDecoration.ITALIC, false));
+        lore.clear();
+        lore.add((Messages.getMessage("&8» &7Tworzy nowy kod dla użytkownika").decoration(TextDecoration.ITALIC, false)));
+        itemMeta.lore(lore);
+        item.setItemMeta(itemMeta);
+        inv.setItem(15, item);
+        // Reload usage of user's code
+        item = new ItemStack(Material.COMPASS, 1);
+        itemMeta = item.getItemMeta();
+        itemMeta.displayName(Messages.getMessage("&d&lZresetuj użycie").decoration(TextDecoration.ITALIC, false));
+        lore.clear();
+        lore.add((Messages.getMessage("&8» &7Resetuje użycie kodu użytkownika").decoration(TextDecoration.ITALIC, false)));
+        itemMeta.lore(lore);
+        item.setItemMeta(itemMeta);
+        inv.setItem(21, item);
+        // Sets user's rank
+        item = new ItemStack(Material.SPRUCE_SIGN, 1);
+        itemMeta = item.getItemMeta();
+        itemMeta.displayName(Messages.getMessage("&6&lUstaw rangę").decoration(TextDecoration.ITALIC, false));
+        lore.clear();
+        lore.add((Messages.getMessage("&8» &7Ustawia rangę użytkownika").decoration(TextDecoration.ITALIC, false)));
+        itemMeta.lore(lore);
+        item.setItemMeta(itemMeta);
+        inv.setItem(23, item);
         return inv;
     }
 }

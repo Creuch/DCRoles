@@ -1,6 +1,7 @@
 package me.creuch.dcroles.commands;
 
 import me.creuch.dcroles.DCRoles;
+import me.creuch.dcroles.functions.Database;
 import me.creuch.dcroles.functions.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -9,7 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.SQLException;
 import java.util.List;
+
 
 public class DCCode implements CommandExecutor {
     @Override
@@ -20,7 +23,12 @@ public class DCCode implements CommandExecutor {
             if (strings.length == 0) {
                 if (commandSender instanceof Player) {
                     if (commandSender.hasPermission("dcr.dccode.self")) {
-                        String code = DCRoles.getData((Player) commandSender, "code");
+                        String code = null;
+                        try {
+                            code = Database.getData((Player) commandSender, "code");
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
                         List<String> messages = instance.getConfig().getStringList("messages.selfDCCode");
                         for (String msg : messages) {
                             msg = msg.replace("{CODE}", code);
@@ -35,11 +43,16 @@ public class DCCode implements CommandExecutor {
             } else {
                 if (commandSender.hasPermission("dcr.dccode.others")) {
                     Player p = Bukkit.getPlayer(strings[0]);
-                    if(p == null) {
+                    if (p == null) {
                         commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound")));
                         return true;
                     }
-                    String code = DCRoles.getData(p, "code");
+                    String code = null;
+                    try {
+                        code = Database.getData(p, "code");
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     List<String> messages = instance.getConfig().getStringList("messages.argDCCode");
                     for (String msg1 : messages) {
                         msg1 = msg1.replace("{CODE}", code);
@@ -54,3 +67,4 @@ public class DCCode implements CommandExecutor {
         return true;
     }
 }
+

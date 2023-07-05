@@ -22,7 +22,6 @@ public class BotLoad {
         } else {
             try {
                 api = JDABuilder.createDefault(botToken).build();
-                api.addEventListener(new onGuildReadyEvent());
             } catch (InvalidTokenException e) {
                 if(!e.toString().isEmpty()) {
                     DCRoles.pluginEnabled = false;

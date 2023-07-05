@@ -11,18 +11,30 @@ sql:
   type: SQLite
   # The rest is only required when using MySQL
   dbAddress: 127.0.0.1:3306
+  dbName: XXX
   dbUsername: root
   dbPassword: XXX
 
+ranks:
+  vip:
+    discordIDs:
+      - roleID
+    minecraftName: VIP
+
 text:
   # PREFIX - {P}
-  prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8» &r"
+  prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8»"
   # Replaces 'default' value from database
   defualtRoleReplace: "Gracz"
   # Null value
   null: Brak
   # Code manage inventory name
   codeManageInvName: "<#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
+  # Server Name to replace in discord log embed
+  serverName: "Survival"
+  # Values to replace 'false' and 'true'
+  true: "Tak"
+  false: "Nie"
 
 
 messages:
@@ -37,13 +49,17 @@ messages:
   playerNotFound: "{P}&c Nie znaleziono takiego gracza"
   executorNotPlayer: "{P}&c Tylko gracz może to zrobić"
   removedUser: "{P}&a Pomyślnie usunięto gracza &7{USER}"
+  rankGive: "{P}&9 Nadano rangę &7{RANK}&9 graczowi &f{USER}"
   codeUsageReset: "{P}&9 Zresetowano uzycie kodu dla Gracza &f{USER}"
-  grantRank: "{P}&9 <click:suggestcommand:dcmcode {USER} grantRank <RANGA>><hover:show_text:\"&8klik.\">&9Kliknij, aby nadać rangę graczowi &7{USER}"
+  badRank: "{P}&c Podaj poprawną nazwę rangi"
+  grantRank: "{P} <hover:show_text:'&8&okilik.'><click:suggest_command:'/dcmcode {USER} grantRank <RANGA>'><blue>Kliknij, aby nadać rangę graczowi <white>{USER}"
   newCode: "{P}&9 Wygenerowano kod &7{CODE}&9 dla użytkownika&f {USER}"
   helpFormat:
     - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
     - "&8» &9/dccode [Nick]&8-&f Pokazuje kod Gracza"
     - "&8» &9/dcmcode <Nick> &8-&f Zarządza kodem Gracza"
+    - "&8» &9/dcmcode <Nick> grantRank <RANGA> &8-&f Nadaje rangę"
+    - "&8» &9/dcreload &8-&f Przeładowuje plugin"
     - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
   firstJoin:
     - "{P} &7Nadano rangę&f {RANK}"
@@ -56,5 +72,20 @@ messages:
   argDCCode:
     - "{P} <#1FFDFD>Kod&7 {USER}:"
     - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
-
   noPermission: "{P}&c Nie masz permisji."
+  discord:
+    invalidUsername: "Podany nick jest niepoprawny."
+    invalidCode: "Podany kod jest niepoprawny."
+    defaultRole: "Ten gracz nie ma kupionej rangi."
+    codeAlreadyUsed: "Ten kod został już wykorzystany"
+    succesRedeem: "**Kod poprawny!**\nNadaję rangę {RANK}"
+    logEmbed:
+      channelToSend: XXX
+      title: "Nadano rangę | {SERVERNAME}"
+      color: "#66ff33"
+      description:
+        - "- **Nick MC**: {USER}"
+        - "\n-------------"
+        - "\n- **Ranga**: {RANK}"
+        - "\n-------------"
+        - "\n- **Discord**: {DISCORD-EXECUTOR}"

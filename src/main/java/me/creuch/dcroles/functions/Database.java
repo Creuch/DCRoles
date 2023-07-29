@@ -5,7 +5,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.sql.*;
-import java.util.Objects;
+import java.util.HashMap;
 
 public class Database {
 
@@ -25,7 +25,7 @@ public class Database {
         return conn;
     }
 
-    public static void updateUser(String username, String info, String data, CommandSender sender) {
+    public static void updateUser(String username, String info, String data, CommandSender sender) throws SQLException {
         DCRoles instance = DCRoles.instance;
         try {
             if (!dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
@@ -33,7 +33,7 @@ public class Database {
             }
             Connection conn = dbConnect(sender);
             Statement stmt = conn.createStatement();
-                // Create player in database
+            // Create player in database
             if (info.equalsIgnoreCase("createUser")) {
                 Integer sql = stmt.executeUpdate(String.format("INSERT INTO discordRoles(username, role, code, used) VALUES('%s', 'default', '%s', false)", username, data));
                 conn.close();
@@ -80,48 +80,21 @@ public class Database {
         }
     }
 
-    public static String getData(OfflinePlayer p, String type) throws SQLException {
+    public static HashMap<String, String> getUserProfile(OfflinePlayer p) throws SQLException {
         try {
-            if (dbConnect(DCRoles.instance.getServer().getConsoleSender()).isClosed()) {
-                dbConnect(DCRoles.instance.getServer().getConsoleSender()).close();
-            }
+            DCRoles instance = DCRoles.instance;
+            HashMap<String, String> user = new HashMap<>();
             Connection conn = dbConnect(DCRoles.instance.getServer().getConsoleSender());
             Statement stmt = conn.createStatement();
-            ResultSet getPlayer = stmt.executeQuery(String.format("SELECT * FROM discordRoles WHERE username = '%s'", p.getName()));
-            String data = DCRoles.instance.getConfig().getString("text.null");
-            if (Objects.equals(type, "existence")) {
-                ResultSet getAllPlayers = stmt.executeQuery("SELECT username, role, code FROM discordRoles");
-                while (getAllPlayers.next()) {
-                    if (Objects.equals(getAllPlayers.getString("username"), p.getPlayer().getName())) {
-                        conn.close();
-                        stmt.close();
-                        getAllPlayers.close();
-                        getPlayer.close();
-                        return "true";
-                    }
-                }
-                conn.close();
-                stmt.close();
-                getAllPlayers.close();
-                getPlayer.close();
-                return "false";
-            } else if (Objects.equals(type, "code")) {
-                if (getPlayer.next()) {
-                    data = getPlayer.getString("code");
-                }
-            } else if (Objects.equals(type, "rank")) {
-                if (getPlayer.next()) {
-                    data = getPlayer.getString("role");
-                }
-            } else if (Objects.equals(type, "used")) {
-                if (getPlayer.next()) {
-                    data = getPlayer.getString("used");
-                }
-            }
-            conn.close();
-            stmt.close();
-            getPlayer.close();
-            return data;
+            ResultSet playerProfile = stmt.executeQuery(String.format("SELECT * FROM discordRoles WHERE username = '%s' limit 0, 1", p.getName()));
+            // Check if profile of the player exists
+            if(!playerProfile.isClosed()) { user.put("exists", "true"); } else { user.put("exists", "false"); return user; }
+            user.put("code", playerProfile.getString("code"));
+            user.put("role", playerProfile.getString("role"));
+            user.put("used", playerProfile.getString("used").replace("1", instance.getConfig().getString("text.true")).replace("0", instance.getConfig().getString("text.false")));
+            // Close all connections
+            conn.close(); stmt.close(); playerProfile.close();
+            return user;
         } catch (SQLException e) {
             e.printStackTrace();
             if (dbConnect(DCRoles.instance.getServer().getConsoleSender()).isClosed()) {

@@ -1,6 +1,8 @@
 package me.creuch.dcroles.functions;
 
 import me.creuch.dcroles.DCRoles;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
@@ -14,5 +16,6 @@ public class GetFunctions {
         ranks.addAll(DCRoles.instance.getConfig().getConfigurationSection("ranks").getKeys(false));
         return ranks;
     }
+
 
 }

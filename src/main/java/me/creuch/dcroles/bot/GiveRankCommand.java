@@ -11,10 +11,13 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import javax.xml.crypto.Data;
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,13 +43,18 @@ public class GiveRankCommand extends ListenerAdapter {
         String usernameOption = event.getOption("nick").getAsString();
         String codeOption = event.getOption("kod").getAsString();
         // Valid options
-        String codeValue = "";
-        String rankValue = "";
-        String usedValue = "";
+        String codeValue;
+        String rankValue;
+        String usedValue;
         try {
-            codeValue = Database.getData(instance.getServer().getOfflinePlayer(usernameOption), "code");
-            rankValue = Database.getData(instance.getServer().getOfflinePlayer(usernameOption), "rank");
-            usedValue = Database.getData(instance.getServer().getOfflinePlayer(usernameOption), "used");
+            HashMap<String, String> userProfile = Database.getUserProfile(Bukkit.getOfflinePlayer(usernameOption));
+            if(userProfile.get("exists") == "false") {
+                event.reply("" + config.getString("messages.discord.invalidUsername")).setEphemeral(true).queue();
+                return;
+            }
+            codeValue = userProfile.get("code");
+            rankValue = userProfile.get("role");
+            usedValue = userProfile.get("used");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +66,11 @@ public class GiveRankCommand extends ListenerAdapter {
             event.reply("" + config.getString("messages.discord.codeAlreadyUsed")).setEphemeral(true).queue();
         }
         if (Objects.equals(usedValue, "0") && !Objects.equals(rankValue, "default") && codeOption.equals(codeValue)) {
-            Database.updateUser(usernameOption, "updateUsage", null, instance.getServer().getConsoleSender());
+            try {
+                Database.updateUser(usernameOption, "updateUsage", null, instance.getServer().getConsoleSender());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             event.reply("" + config.getString("messages.discord.succesRedeem").replace("{RANK}", rankValue)).setEphemeral(true).queue();
             List<String> discordIDs = config.getStringList("ranks." + rankValue + ".discordIDs");
             for (String roleID : discordIDs) {
@@ -70,12 +82,15 @@ public class GiveRankCommand extends ListenerAdapter {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle(config.getString("messages.discord.logEmbed.title").replace("{SERVERNAME}", config.getString("text.serverName")));
             List<String> description = config.getStringList("messages.discord.logEmbed.description");
-            eb.setColor(Color.getColor(config.getString("messages.discord.logEmbed.color")));
+            eb.setColor(Color.decode(config.getString("messages.discord.logEmbed.color")));
+            int i = 0;
             for (String descLine : description) {
+                if(i > 0){ descLine = "\n" + descLine; }
                 descLine = descLine.replace("{USER}", usernameOption);
                 descLine = descLine.replace("{RANK}", rankValue);
                 descLine = descLine.replace("{DISCORD-EXECUTOR}", event.getUser().getName());
                 eb.appendDescription(descLine);
+                i += 1;
             }
             event.getGuild().getTextChannelById(config.getString("messages.discord.logEmbed.channelToSend")).sendMessageEmbeds(eb.build()).queue();
         }

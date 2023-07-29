@@ -7,7 +7,7 @@ bot:
 
 sql:
   # MySQL or SQLite
-  # Upon changing the database type, the user data will not be saved
+  # Upon changing the database type, all data will be deleted
   type: SQLite
   # The rest is only required when using MySQL
   dbAddress: 127.0.0.1:3306
@@ -24,22 +24,23 @@ ranks:
 text:
   # PREFIX - {P}
   prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8»"
-  # Replaces 'default' value from database
+  # What should the plugin replace 'default' rank from database to
   defualtRoleReplace: "Gracz"
   # Null value
   null: Brak
-  # Code manage inventory name
+  # /dcmcode Inventory Name
   codeManageInvName: "<#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
-  # Server Name to replace in discord log embed
+  # /dcmgui Inventory Name
+  codeManageTestInvName: "&5&lTEST &8&l» <#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
+  # Name of your server (Gets replaced in log embed)
   serverName: "Survival"
-  # Values to replace 'false' and 'true'
+  # What should the plugin replace 'false' and 'true' to
   true: "Tak"
   false: "Nie"
 
 
 messages:
   # HEX - <#XXXXXX>
-  # Plugin start
   pluginEnabling: "{P}&9 Włączanie pluginu..."
   pluginDisabling: "{P}&9 Wyłączanie pluginu..."
   pluginEnabled: "{P}&7 {PLUGIN} &azostał włączony!"
@@ -64,12 +65,12 @@ messages:
   firstJoin:
     - "{P} &7Nadano rangę&f {RANK}"
     - "{P} &7Wygenerowano kod:&f {CODE}"
-  # DCRCode output, when showing sender's code
-  selfDCCode:
+  # Output of getting user's code
+  userCodeCommandSelf:
     - "{P} <#1FFDFD>Twój kod:"
     - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
-  # DCCode output, when showing other person's code
-  argDCCode:
+  # Output of getting other user's code
+  userCodeCommandOther:
     - "{P} <#1FFDFD>Kod&7 {USER}:"
     - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
   noPermission: "{P}&c Nie masz permisji."
@@ -85,7 +86,55 @@ messages:
       color: "#66ff33"
       description:
         - "- **Nick MC**: {USER}"
-        - "\n-------------"
-        - "\n- **Ranga**: {RANK}"
-        - "\n-------------"
-        - "\n- **Discord**: {DISCORD-EXECUTOR}"
+        - "-------------"
+        - "- **Ranga**: {RANK}"
+        - "-------------"
+        - "- **Discord**: {DISCORD-EXECUTOR}"
+
+gui:
+  size: 36
+  # Background of GUI (Placed on AIR material) Set 'AIR' to disable
+  filler:
+    material: "GRAY_STAINED_GLASS_PANE"
+  items:
+    '11':
+      type: REMOVE_USER
+      # Set to 'NONE' for no permission requirement
+      # REMOVE_USER, NEW_CODE, RESET_USAGE, SET_RANK, INFO_ITEM
+      permission: dcr.gui.admin
+      material: LAVA_BUCKET
+      name: §c§lUsuń użytkownika
+      lore:
+        - §8» §7Usuwa dane użytkownika z bazy danych
+    '13':
+      type: INFO_ITEM
+      permission: dcr.gui.info
+      material: PLAYER_HEAD
+      name: §f§l{USER}
+      lore:
+        - '§8» §7Kod: §f{CODE}'
+        - '§8» §7Wykorzystano: §f{USED}'
+        - '§8» §7Ranga: §f{RANK}'
+    '15':
+      type: NEW_CODE
+      permission: dcr.gui.admin
+      material: ENDER_PEARL
+      name: §9§lNowy kod
+      lore:
+        - §8» §7Tworzy nowy kod dla użytkownika
+    '21':
+      type: RESET_USAGE
+      permission: dcr.gui.admin
+      material: COMPASS
+      name: §d§lZresetuj użycie
+      lore:
+        - §8» §7Resetuje użycie kodu użytkownika
+    '23':
+      type: SET_RANK
+      permission: dcr.gui.admin
+      material: SPRUCE_SIGN
+      name: §6§lUstaw rangę
+      lore:
+        - §8» §7Ustawia rangę użytkownika
+
+tempGui:

@@ -1,23 +1,28 @@
 package me.creuch.dcroles.functions;
 
 import me.creuch.dcroles.DCRoles;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.sql.*;
 import java.util.HashMap;
 
 public class Database {
 
-    public static Connection dbConnect(CommandSender sender) throws SQLException {
+    DCRoles DCRoles = new DCRoles();
+    Messages Messages = new Messages();
+
+    public Connection dbConnect(CommandSender sender) throws SQLException {
         assert DCRoles.checkPluginStatus(sender);
         Connection conn;
-        if (DCRoles.instance.getConfig().getString("sql.type").equalsIgnoreCase("mysql")) {
-            conn = DriverManager.getConnection("jdbc:mysql://" + DCRoles.instance.getConfig().getString("sql.dbAddress") + "/" + DCRoles.instance.getConfig().getString("sql.dbName"), DCRoles.instance.getConfig().getString("sql.dbUsername"), DCRoles.instance.getConfig().getString("sql.dbPassword"));
-        } else if (DCRoles.instance.getConfig().getString("sql.type").equalsIgnoreCase("sqlite")) {
-            conn = DriverManager.getConnection("jdbc:sqlite:" + DCRoles.instance.getDataFolder() + ":DCRoles.db");
+        if (DCRoles.getInstance().getConfig().getString("sql.type").equalsIgnoreCase("mysql")) {
+            conn = DriverManager.getConnection("jdbc:mysql://" + DCRoles.getInstance().getConfig().getString("sql.dbAddress") + "/" + DCRoles.getInstance().getConfig().getString("sql.dbName"), DCRoles.getInstance().getConfig().getString("sql.dbUsername"), DCRoles.getInstance().getConfig().getString("sql.dbPassword"));
+        } else if (DCRoles.getInstance().getConfig().getString("sql.type").equalsIgnoreCase("sqlite")) {
+            conn = DriverManager.getConnection("jdbc:sqlite:" + DCRoles.getInstance().getDataFolder() + "/DCRoles.db");
         } else {
-            sender.sendMessage(Messages.getMessage(DCRoles.config.getString("messages.badSQLType")));
+            sender.sendMessage(Messages.getMessage(DCRoles.getInstance().getConfig().getString("messages.badSQLType"), (Player) sender));
             DCRoles.pluginEnabled = false;
             DCRoles.disabledReason = "&cNiepoprawny typ bazy danych";
             return null;
@@ -25,8 +30,8 @@ public class Database {
         return conn;
     }
 
-    public static void updateUser(String username, String info, String data, CommandSender sender) throws SQLException {
-        DCRoles instance = DCRoles.instance;
+    public void updateUser(String username, String info, String data, CommandSender sender) throws SQLException {
+        DCRoles instance = DCRoles.getInstance();
         try {
             if (!dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
                 dbConnect(instance.getServer().getConsoleSender()).close();
@@ -80,25 +85,24 @@ public class Database {
         }
     }
 
-    public static HashMap<String, String> getUserProfile(OfflinePlayer p) throws SQLException {
+    public HashMap<String, String> getUserProfile(OfflinePlayer p) throws SQLException {
         try {
-            DCRoles instance = DCRoles.instance;
             HashMap<String, String> user = new HashMap<>();
-            Connection conn = dbConnect(DCRoles.instance.getServer().getConsoleSender());
+            Connection conn = dbConnect(DCRoles.getInstance().getServer().getConsoleSender());
             Statement stmt = conn.createStatement();
             ResultSet playerProfile = stmt.executeQuery(String.format("SELECT * FROM discordRoles WHERE username = '%s' limit 0, 1", p.getName()));
             // Check if profile of the player exists
-            if(!playerProfile.isClosed()) { user.put("exists", "true"); } else { user.put("exists", "false"); return user; }
+            if(!playerProfile.isClosed() && playerProfile.getString("code") != null) { user.put("exists", "true"); } else { user.put("exists", "false"); return user; }
             user.put("code", playerProfile.getString("code"));
             user.put("role", playerProfile.getString("role"));
-            user.put("used", playerProfile.getString("used").replace("1", instance.getConfig().getString("text.true")).replace("0", instance.getConfig().getString("text.false")));
+            user.put("used", playerProfile.getString("used").replace("1", DCRoles.getInstance().getConfig().getString("text.true")).replace("0", DCRoles.getInstance().getConfig().getString("text.false")));
             // Close all connections
             conn.close(); stmt.close(); playerProfile.close();
             return user;
         } catch (SQLException e) {
             e.printStackTrace();
-            if (dbConnect(DCRoles.instance.getServer().getConsoleSender()).isClosed()) {
-                dbConnect(DCRoles.instance.getServer().getConsoleSender()).close();
+            if (dbConnect(DCRoles.getInstance().getServer().getConsoleSender()).isClosed()) {
+                dbConnect(DCRoles.getInstance().getServer().getConsoleSender()).close();
             }
         }
         return null;

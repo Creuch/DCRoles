@@ -2,6 +2,7 @@ package me.creuch.dcroles.bot;
 
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.functions.Database;
+import me.creuch.dcroles.functions.Messages;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -23,8 +24,11 @@ import java.util.Objects;
 
 public class GiveRankCommand extends ListenerAdapter {
 
-    public static CommandData loadCommand() {
-        DCRoles instance = DCRoles.instance;
+    DCRoles DCRoles = new DCRoles();
+    me.creuch.dcroles.functions.Database Database = new Database();
+
+    public CommandData loadCommand() {
+        DCRoles instance = DCRoles.getInstance();
         OptionData mcName = new OptionData(OptionType.STRING, "nick", instance.getConfig().getString("bot.mcNameOption"), true);
         OptionData mcCode = new OptionData(OptionType.STRING, "kod", instance.getConfig().getString("bot.codeOption"), true);
         return Commands.slash(instance.getConfig().getString("bot.giveRankName"), instance.getConfig().getString("bot.commandDescription")).addOptions(mcName, mcCode);
@@ -32,7 +36,7 @@ public class GiveRankCommand extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        DCRoles instance = DCRoles.instance;
+        DCRoles instance = DCRoles.getInstance();
         instance.getServer().getLogger().finest(event.getName());
         FileConfiguration config = instance.getConfig();
         String cmd = event.getCommandString();
@@ -49,7 +53,7 @@ public class GiveRankCommand extends ListenerAdapter {
         try {
             HashMap<String, String> userProfile = Database.getUserProfile(Bukkit.getOfflinePlayer(usernameOption));
             if(userProfile.get("exists") == "false") {
-                event.reply("" + config.getString("messages.discord.invalidUsername")).setEphemeral(true).queue();
+                event.reply(config.getString("messages.discord.invalidUsername")).setEphemeral(true).queue();
                 return;
             }
             codeValue = userProfile.get("code");
@@ -59,11 +63,11 @@ public class GiveRankCommand extends ListenerAdapter {
             throw new RuntimeException(e);
         }
         if (!codeOption.equals(codeValue)) {
-            event.reply("" + config.getString("messages.discord.invalidCode")).setEphemeral(true).queue();
+            event.reply(config.getString("messages.discord.invalidCode")).setEphemeral(true).queue();
         } else if (Objects.equals(rankValue, "default")) {
-            event.reply("" + config.getString("messages.discord.defaultRole")).setEphemeral(true).queue();
+            event.reply(config.getString("messages.discord.defaultRole")).setEphemeral(true).queue();
         } else if (Objects.equals(usedValue, "1")) {
-            event.reply("" + config.getString("messages.discord.codeAlreadyUsed")).setEphemeral(true).queue();
+            event.reply(config.getString("messages.discord.codeAlreadyUsed")).setEphemeral(true).queue();
         }
         if (Objects.equals(usedValue, "0") && !Objects.equals(rankValue, "default") && codeOption.equals(codeValue)) {
             try {
@@ -71,7 +75,7 @@ public class GiveRankCommand extends ListenerAdapter {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            event.reply("" + config.getString("messages.discord.succesRedeem").replace("{RANK}", rankValue)).setEphemeral(true).queue();
+            event.reply(config.getString("messages.discord.succesRedeem").replace("{RANK}", rankValue)).setEphemeral(true).queue();
             List<String> discordIDs = config.getStringList("ranks." + rankValue + ".discordIDs");
             for (String roleID : discordIDs) {
                 assert member != null;

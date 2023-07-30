@@ -10,6 +10,8 @@ import java.util.List;
 
 public class onGuildReadyEvent extends ListenerAdapter {
 
+    GiveRankCommand GiveRankCommand = new GiveRankCommand();
+
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         List<CommandData> commandData = new ArrayList<>();

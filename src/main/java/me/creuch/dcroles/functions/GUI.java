@@ -5,8 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,23 +17,27 @@ import java.util.List;
 
 public class GUI {
 
-    public static @NotNull ItemStack getConfigItem(String path, String pName, String guiType) throws SQLException {
-        DCRoles instance = DCRoles.instance;
+    DCRoles DCRoles = new DCRoles();
+    Messages Messages = new Messages();
+    me.creuch.dcroles.functions.Database Database = new Database();
+
+    public @NotNull ItemStack getConfigItem(String path, String pName, String guiType) throws SQLException {
+        DCRoles instance = DCRoles.getInstance();
         HashMap<String, String> user = Database.getUserProfile(Bukkit.getPlayer(pName));
         Material material = Material.getMaterial(instance.getConfig().getString(path + ".material"));
         Component displayName;
         if (guiType == "normal") {
-            displayName = Messages.getMessage(instance.getConfig().getString(path + ".name").replace("§", "&").replace("{USER}", pName).replace("{CODE}", user.get("code")).replace("{RANK}", user.get("role")).replace("{USED}", user.get("used")));
+            displayName = Messages.getMessage(instance.getConfig().getString(path + ".name"), Bukkit.getPlayer(pName));
         } else {
-            displayName = Messages.getMessage(instance.getConfig().getString(path + ".name").replace("§", "&"));
+            displayName = Messages.getMessage(instance.getConfig().getString(path + ".name"), Bukkit.getPlayer(pName));
         }
         List<String> tempLore = instance.getConfig().getStringList(path + ".lore");
         List<Component> newLore = new ArrayList<>();
         for (String lLine : tempLore) {
             if (guiType == "normal") {
-                newLore.add(Messages.getMessage(lLine.replace("§", "&").replace("{USER}", pName).replace("{CODE}", user.get("code")).replace("{RANK}", user.get("role")).replace("{USED}", user.get("used"))).decoration(TextDecoration.ITALIC, false));
+                newLore.add(Messages.getMessage(lLine, Bukkit.getPlayer(pName)).decoration(TextDecoration.ITALIC, false));
             } else {
-                newLore.add(Messages.getMessage(lLine.replace("§", "&")).decoration(TextDecoration.ITALIC, false));
+                newLore.add(Messages.getMessage(lLine, Bukkit.getPlayer(pName)).decoration(TextDecoration.ITALIC, false));
             }
         }
         ItemStack itemStack = new ItemStack(material);
@@ -46,46 +48,14 @@ public class GUI {
         return itemStack;
     }
 
-    public static Inventory getGui(String pName, OfflinePlayer p, String guiType, String path) throws SQLException {
-        DCRoles instance = DCRoles.instance;
-        Inventory inv;
-        if(guiType == "normal") {
-            inv = Bukkit.createInventory(null, instance.getConfig().getInt("gui.size"), Messages.getMessage(instance.getConfig().getString("text.codeManageInvName")));
-        } else {
-            inv = Bukkit.createInventory(null, instance.getConfig().getInt("gui.size"), Messages.getMessage(instance.getConfig().getString("text.codeManageTestInvName")));
-        }
-        ItemStack is;
-        for (String s : instance.getConfig().getConfigurationSection("gui.items").getKeys(false)) {
-            is = getConfigItem(path + s, pName, guiType);
-            String permission = instance.getConfig().getString(path + s + ".permission");
-            if (guiType != "normal" || !permission.equalsIgnoreCase("NONE") && ((Player) p).hasPermission(permission)) {
-                inv.setItem(Integer.parseInt(s), is);
-            }
-
-        }
-        if (guiType == "normal") {
-            for (int i = 0; i < inv.getSize(); i++) {
-                assert inv.getItem(i).getType().equals(Material.AIR);
-                ItemStack itemStack = new ItemStack(Material.getMaterial(instance.getConfig().getString("gui.filler.material")));
-                if (itemStack.getType() != Material.AIR) {
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    itemMeta.displayName(Messages.getMessage("&7 "));
-                    itemStack.setItemMeta(itemMeta);
-                    inv.setItem(i, itemStack);
-                }
-            }
-        }
-        return inv;
-    }
-
-    public static void saveInvToConfig(Inventory inv, String path) {
-        DCRoles instance = DCRoles.instance;
+    public void saveInvToConfig(Inventory inv, String path) throws SQLException {
+        DCRoles instance = DCRoles.getInstance();
         ItemStack is;
         List<String> itemsUsed = new ArrayList<>();
         for (int i = 0; i < inv.getSize(); i++) {
             if (inv.getItem(i) != null && !inv.getItem(i).getType().equals(Material.getMaterial(instance.getConfig().getString("gui.filler.material"))) && !inv.getItem(i).getType().equals(Material.AIR)) {
                 is = inv.getItem(i);
-                Bukkit.broadcast(Messages.getMessage(is.getType().toString()));
+                Bukkit.broadcast(Messages.getMessage(is.getType().toString(), null));
                 itemsUsed.add(String.valueOf(i));
                 if(instance.getConfig().getString(path + i + ".type") == null) {
                     instance.getConfig().set(path + i + ".type", "NONE");

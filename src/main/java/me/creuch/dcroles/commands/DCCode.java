@@ -17,10 +17,19 @@ import java.util.List;
 
 
 public class DCCode implements CommandExecutor {
+
+    DCRoles DCRoles = new DCRoles();
+    Messages Messages = new Messages();
+    me.creuch.dcroles.functions.Database Database = new Database();
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (command.getName().equalsIgnoreCase("dccode")) {
-            assert DCRoles.checkPluginStatus(commandSender);
+            try {
+                assert DCRoles.checkPluginStatus(commandSender);
+            } catch(SQLException e) {
+                e.printStackTrace();
+            }
             DCRoles instance = DCRoles.instance;
             HashMap<String, String> user;
             String code;
@@ -30,26 +39,26 @@ public class DCCode implements CommandExecutor {
                         if (commandSender.hasPermission("dcr.dccode.self")) {
                             user = Database.getUserProfile((OfflinePlayer) commandSender);
                             if(user.get("exists").equalsIgnoreCase("false")) {
-                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound")));
+                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound"), (Player) commandSender));
                                 return true;
                             }
                             code = user.get("code");
                             List<String> messages = instance.getConfig().getStringList("messages.userCodeCommandSelf");
                             for (String msg : messages) {
                                 msg = msg.replace("{CODE}", code);
-                                commandSender.sendMessage(Messages.getMessage(msg));
+                                commandSender.sendMessage(Messages.getMessage(msg, (Player) commandSender));
                             }
                         } else {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission")));
+                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (Player) commandSender));
                         }
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer")));
+                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer"), (Player) commandSender));
                     }
                 } else {
                     if (commandSender.hasPermission("dcr.dccode.others")) {
                         user = Database.getUserProfile(Bukkit.getOfflinePlayer(strings[0]));
                         if(user.get("exists").equalsIgnoreCase("false")) {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound")));
+                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound"), (Player) commandSender));
                             return true;
                         }
                         code = user.get("code");
@@ -57,10 +66,10 @@ public class DCCode implements CommandExecutor {
                         for (String msg1 : messages) {
                             msg1 = msg1.replace("{CODE}", code);
                             msg1 = msg1.replace("{USER}", strings[0]);
-                            commandSender.sendMessage(Messages.getMessage(msg1));
+                            commandSender.sendMessage(Messages.getMessage(msg1, (Player) commandSender));
                         }
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission")));
+                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (Player) commandSender));
                     }
                 }
             } catch (SQLException e) {

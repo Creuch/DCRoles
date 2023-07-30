@@ -3,6 +3,7 @@ version: '${project.version}'
 main: me.creuch.dcroles.DCRoles
 api-version: '1.19'
 website: https://wolfservers.pl/
+softdepend: [PlaceholderAPI]
 authors:
   - _Creuch
 

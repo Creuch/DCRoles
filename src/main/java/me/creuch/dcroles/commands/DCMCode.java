@@ -5,9 +5,10 @@ import me.creuch.dcroles.functions.Database;
 import me.creuch.dcroles.functions.GUI;
 import me.creuch.dcroles.functions.GetFunctions;
 import me.creuch.dcroles.functions.Messages;
+import me.creuch.dcroles.inventory.BuilderInventory;
+import me.creuch.dcroles.inventory.CodeManageInventory;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,113 +16,83 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static me.creuch.dcroles.functions.Database.dbConnect;
 
 public class DCMCode implements CommandExecutor, TabCompleter {
-    public static Inventory getManageGUI(String pName, OfflinePlayer p) throws SQLException {
-        DCRoles instance = DCRoles.instance;
-        Inventory inv = Bukkit.createInventory(null, instance.getConfig().getInt("gui.size"), Messages.getMessage(instance.getConfig().getString("text.codeManageInvName")));
-        ItemStack is;
-        for(String s : instance.getConfig().getConfigurationSection("gui.items").getKeys(false)) {
-            is = GUI.getConfigItem("gui.items." + s, pName, "normal");
-            if(Objects.equals(instance.getConfig().getString("gui.items." + s + ".type"), "INFO_ITEM")) {
-                SkullMeta skullMeta = (SkullMeta) is.getItemMeta();
-                skullMeta.setOwningPlayer(p);
-                is.setItemMeta(skullMeta);
-            }
-            String permission = instance.getConfig().getString("gui.items." + s + ".permission");
-            if(!permission.equalsIgnoreCase("NONE") && ((Player) p).hasPermission(permission)) {
-                inv.setItem(Integer.parseInt(s), is);
-            }
 
-        }
-        for(int i = 0; i < inv.getSize(); i++) {
-            if(inv.getItem(i) == null || inv.getItem(i).getType().equals(Material.AIR)) {
-                ItemStack itemStack = new ItemStack(Material.getMaterial(instance.getConfig().getString("gui.filler.material")));
-                if(itemStack.getType() != Material.AIR) {
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    itemMeta.displayName(Messages.getMessage("&7 ").decoration(TextDecoration.ITALIC, false));
-                    itemStack.setItemMeta(itemMeta);
-                    inv.setItem(i, itemStack);
-                }
-            }
-        }
-        return inv;
-    }
+    DCRoles DCRoles = new DCRoles();
+    Messages Messages = new Messages();
+    me.creuch.dcroles.functions.Database Database = new Database();
+    GetFunctions GetFunctions = new GetFunctions();
+    CodeManageInventory inventory = new CodeManageInventory();
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (command.getName().equalsIgnoreCase("dcmcode")) {
-            assert DCRoles.checkPluginStatus(commandSender);
-            DCRoles instance = DCRoles.instance;
-            if (strings.length == 0) {
-                if (commandSender.hasPermission("dcr.dcmcode")) {
-                    List<String> messages = instance.getConfig().getStringList("messages.helpFormat");
-                    for (String msg : messages) {
-                        commandSender.sendMessage(Messages.getMessage(msg));
-                    }
-                } else {
-                    commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission")));
-                }
-            } else {
-                if (strings.length >= 2 && strings[1].equalsIgnoreCase("grantRank")) {
+            try {
+                assert DCRoles.checkPluginStatus(commandSender);
+                DCRoles instance = DCRoles.instance;
+                if (strings.length == 0) {
                     if (commandSender.hasPermission("dcr.dcmcode")) {
-                        List<String> ranks = GetFunctions.getRanks(commandSender);
-                        if (strings.length < 3) {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.badRank")));
-                            return true;
+                        List<String> messages = instance.getConfig().getStringList("messages.helpFormat");
+                        for (String msg : messages) {
+                            commandSender.sendMessage(Messages.getMessage(msg, (OfflinePlayer) commandSender));
                         }
-                        for (String rank : ranks) {
-                            if (strings[2].equalsIgnoreCase(rank)) {
-                                try {
-                                    commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.rankGive").replace("{USER}", strings[0]).replace("{RANK}", rank)));
-                                    if (dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
-                                        dbConnect(instance.getServer().getConsoleSender()).close();
-                                    }
-                                    Database.updateUser(strings[0], "setRank", rank, commandSender);
-                                    return true;
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.badRank")));
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission")));
+                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (OfflinePlayer) commandSender));
                     }
                 } else {
-                    if (commandSender.hasPermission("dcr.dcmcode")) {
-                        if(commandSender instanceof HumanEntity) {
-                            OfflinePlayer p = Bukkit.getPlayer(strings[0]);
-                            if (p == null) {
-                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound")));
+                    if (strings.length >= 2 && strings[1].equalsIgnoreCase("grantRank")) {
+                        if (commandSender.hasPermission("dcr.dcmcode")) {
+                            List<String> ranks = GetFunctions.getRanks(commandSender);
+                            if (strings.length < 3) {
+                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.badRank"), (OfflinePlayer) commandSender));
                                 return true;
                             }
-                            Player cs = (Player) commandSender;
-                            try {
-                                cs.openInventory(GUI.getGui(p.getName(), p, "normal", "gui.items."));
-                            } catch (SQLException e) {
-                                throw new RuntimeException(e);
+                            for (String rank : ranks) {
+                                if (strings[2].equalsIgnoreCase(rank)) {
+                                    try {
+                                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.rankGive"), (OfflinePlayer) commandSender));
+                                        if (Database.dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
+                                            Database.dbConnect(instance.getServer().getConsoleSender()).close();
+                                        }
+                                        Database.updateUser(strings[0], "setRank", rank, commandSender);
+                                        return true;
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
+                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.badRank"), (OfflinePlayer) commandSender));
                         } else {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer")));
+                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (OfflinePlayer) commandSender));
                         }
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission")));
+                        if (commandSender.hasPermission("dcr.dcmcode")) {
+                            if (commandSender instanceof HumanEntity) {
+                                OfflinePlayer p = Bukkit.getPlayer(strings[0]);
+                                if (p == null) {
+                                    commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound"), (OfflinePlayer) commandSender));
+                                    return true;
+                                }
+                                Player cs = (Player) commandSender;
+                                inventory.setPlayer(cs);
+                                cs.openInventory(inventory.getInventory());
+                            } else {
+                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer"), (OfflinePlayer) commandSender));
+                            }
+                        } else {
+                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (OfflinePlayer) commandSender));
+                        }
                     }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
         return true;
@@ -136,7 +107,11 @@ public class DCMCode implements CommandExecutor, TabCompleter {
                 return tabArgs;
             }
             if (args.length == 3) {
-                return GetFunctions.getRanks(sender);
+                try {
+                    return GetFunctions.getRanks(sender);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         return null;

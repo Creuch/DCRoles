@@ -5,11 +5,15 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GetFunctions {
-    public static List<String> getRanks(CommandSender sender) {
+
+    DCRoles DCRoles = new DCRoles();
+
+    public List<String> getRanks(CommandSender sender) throws SQLException {
         assert DCRoles.checkPluginStatus(sender);
         List<String> ranks = new ArrayList<>();
         ranks.add("default");

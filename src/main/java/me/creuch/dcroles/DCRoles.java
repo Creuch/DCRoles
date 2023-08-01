@@ -1,160 +1,135 @@
 package me.creuch.dcroles;
 
-import me.creuch.dcroles.bot.BotLoad;
-import me.creuch.dcroles.bot.GiveRankCommand;
-import me.creuch.dcroles.bot.onGuildReadyEvent;
 import me.creuch.dcroles.commands.DCCode;
 import me.creuch.dcroles.commands.DCMCode;
 import me.creuch.dcroles.commands.DCMGui;
 import me.creuch.dcroles.commands.DCReload;
-import me.creuch.dcroles.events.onInventoryEvent;
+import me.creuch.dcroles.discord.LoadBot;
 import me.creuch.dcroles.events.onJoinEvent;
-import me.creuch.dcroles.functions.Database;
-import me.creuch.dcroles.functions.Messages;
-import me.creuch.dcroles.papi.PlaceholderAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.File;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Random;
 
-public final class DCRoles extends JavaPlugin implements @NotNull Listener {
+public final class DCRoles extends JavaPlugin {
 
-    public DCRoles instance;
-    // Config file
-    public FileConfiguration config;
-    // Plugin status
-    public boolean pluginEnabled = true;
-    public String disabledReason = null;
-    // Other Class's instances
-    Messages Messages = new Messages();
-    BotLoad BotLoad = new BotLoad();
-    Database Database = new Database();
+    private static DCRoles instance;
+    Database Database;
+    TextHandling TextHandling;
+    LoadBot LoadBot;
+    // Config files
+    private YamlConfiguration mainConfig;
+    private YamlConfiguration langConfig;
+    // Get player that all functions use at the moment
+    private static OfflinePlayer activePlayer;
+    // Get active inventory
+    private static Inventory inventory;
 
-    public boolean checkPluginStatus(CommandSender sender) throws SQLException {
-        if (!pluginEnabled) {
-            sender.sendMessage(Messages.getMessage(instance.getConfig().getString("pluginDisabled"), (Player) sender));
-            sender.sendMessage(Messages.getMessage("{P} " + disabledReason, (Player) sender));
-            return false;
-        }
-        return true;
+    // Setters
+    public void setPlayer(OfflinePlayer p) {
+        activePlayer = p;
+    }
+    public void setInventory(Inventory inv) {
+        inventory = inv;
     }
 
-    public void reloadPlugin(CommandSender sender) throws SQLException {
-        try {
-            instance.saveDefaultConfig();
-            instance.reloadConfig();
-            config = instance.getConfig();
-        } catch (Exception e) {
-            if (e.getMessage().contains("InvalidConfigurationException")) {
-                pluginEnabled = false;
-                disabledReason = "&cBłąd w configu!";
-                sender.sendMessage(Messages.getMessage(getDisabledReason(), (Player) sender));
-                e.printStackTrace();
-                return;
-            } else {
-                e.printStackTrace();
-            }
-        }
-        sender.sendMessage(Messages.getMessage(config.getString("messages.pluginEnabling"), (Player) sender));
-        BotLoad.login(sender);
-        List<String> addedPerms = new ArrayList<>();
-        for (String s : Objects.requireNonNull(instance.getConfig().getConfigurationSection("gui.items")).getKeys(false)) {
-            String permissionName = instance.getConfig().getString("gui.items." + s + ".permission");
-            if (!permissionName.equalsIgnoreCase("NONE")) {
-                Permission perm = new Permission(permissionName, PermissionDefault.OP);
-                perm.addParent("dcroles.*", true);
-                for (Permission permission : instance.getServer().getPluginManager().getPermissions()) {
-                    if (permission.getName().equalsIgnoreCase(permissionName) || instance.getServer().getPluginManager().getPermissions().contains(perm) && addedPerms.size() > 0 && !addedPerms.contains(permissionName)) {
-                        break;
-                    }
-                    instance.getServer().getPluginManager().addPermission(perm);
-                    addedPerms.add(permissionName);
-                }
-            }
-        }
-        if (pluginEnabled) {
-            disabledReason = null;
-            sender.sendMessage(Messages.getMessage(config.getString("messages.pluginEnabled").replace("{PLUGIN}", instance.getDescription().getName() + " " + instance.getDescription().getVersion()), (Player) sender));
-        } else {
-            sender.sendMessage(Messages.getMessage(config.getString("messages.pluginDisabled"), (Player) sender));
-            sender.sendMessage(Messages.getMessage("{P} " + disabledReason, (Player) sender));
-        }
-
+    // Getters
+    public OfflinePlayer getPlayer() {
+        return activePlayer;
     }
-
+    public Inventory getInventory() {
+        return inventory;
+    }
     public DCRoles getInstance() {
         return instance;
     }
+    public YamlConfiguration getMainConfig() {
+        return mainConfig;
+    }
+    public YamlConfiguration getLangConfig() {
+        return langConfig;
+    }
+    public String getCode() { return String.valueOf(new Random().nextLong(100000000, 999999999)); }
 
-    public String getDisabledReason() {
-        return disabledReason;
+
+    // Plugin toggling methods
+    public void reloadPlugin(CommandSender sender) {
+        try {
+            LoadBot = new LoadBot(this, sender);
+            // Handle config files
+            if(!new File(getDataFolder(), "config.yml").exists()) { saveResource("config.yml", true); }
+            if(!new File(getDataFolder(), "lang.yml").exists()) { saveResource("lang.yml", true); }
+            mainConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
+            langConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml"));
+            mainConfig.save(new File(getDataFolder(), "config.yml"));
+            langConfig.save(new File(getDataFolder(), "lang.yml"));
+            sender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.pluginEnabling")));
+            Database.createTable(sender);
+            // Send info about conn type
+            HashMap<String, String> info = Database.getDBInfo();
+            if (info.get("type").equalsIgnoreCase("mysql")) {
+                sender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.dbConnType").replace("{TYPE}", "MySQL")));
+            } else {
+                sender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.dbConnType").replace("{TYPE}", "SQLite")));
+            }
+            LoadBot.login();
+            sender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.pluginEnabled")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public Long generateCode() {
-        Random random = new Random();
-        return random.nextLong(100000000, 999999999);
-    }
 
     @Override
     public void onEnable() {
         instance = this;
-        try {
-            if (instance.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                instance.getServer().getPluginManager().registerEvents(this, this);
-            }
-            if (!Database.dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
-                Database.dbConnect(instance.getServer().getConsoleSender()).close();
-            }
-            Connection conn = Database.dbConnect(instance.getServer().getConsoleSender());
-            Statement stmt = conn.createStatement();
-            Integer createTable = stmt.executeUpdate("CREATE TABLE IF NOT EXISTS discordRoles (username varchar(16), role varchar(16), code varchar(16), used boolean)");
-            conn.close();
-            stmt.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        // Check if BKCommonLib is installed
+        if(Bukkit.getPluginManager().getPlugin("BKCommonLib") == null || !Bukkit.getPluginManager().getPlugin("BKCommonLib").isEnabled()){
+            Bukkit.getConsoleSender().sendMessage(TextHandling.getFormatted("{P}&c&l Nie znaleziono pluginu BKCommonLib!"));
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
-        instance.getCommand("dcmcode").setExecutor(new DCMCode());
-        instance.getCommand("dcmcode").setTabCompleter(new DCMCode());
-        instance.getCommand("dcmgui").setExecutor(new DCMGui());
-        instance.getCommand("dcreload").setExecutor(new DCReload());
-        instance.getCommand("dccode").setExecutor(new DCCode());
-        instance.getServer().getPluginManager().registerEvents(new onJoinEvent(), instance);
-        instance.getServer().getPluginManager().registerEvents(new onInventoryEvent(), instance);
-        new PlaceholderAPI().register();
-        try {
-            reloadPlugin(getServer().getConsoleSender());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        BotLoad.api.addEventListener(new onGuildReadyEvent());
-        BotLoad.api.addEventListener(new GiveRankCommand());
+        Database = new Database(this);
+        TextHandling = new TextHandling(this);
+        // Load config files
+        mainConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
+        langConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml"));
+        reloadPlugin(getServer().getConsoleSender());
+        // Declare Commands
+        this.getCommand("dcreload").setExecutor(new DCReload(this));
+        this.getCommand("dcmgui").setExecutor(new DCMGui(this));
+        this.getCommand("dccode").setExecutor(new DCCode(this));
+        this.getCommand("dcmcode").setExecutor(new DCMCode(this));
+        // Declare Tab Completion
+        this.getCommand("dccode").setTabCompleter(new DCCode(this));
+        this.getCommand("dcmcode").setTabCompleter(new DCMCode(this));
+        // Declare Events
+        this.getServer().getPluginManager().registerEvents(new onJoinEvent(this), this);
+        this.getServer().getPluginManager().registerEvents(new me.creuch.dcroles.inventory.builderinventory.Events(this), this);
+        this.getServer().getPluginManager().registerEvents(new me.creuch.dcroles.inventory.itemsettingsinventory.Events(this), this);
+        this.getServer().getPluginManager().registerEvents(new me.creuch.dcroles.inventory.codemanageinventory.Events(this), this);
 
     }
 
     @Override
     public void onDisable() {
+        Bukkit.getConsoleSender().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.pluginDisabling")));
         try {
-            instance.getServer().getConsoleSender().sendMessage(Messages.getMessage(config.getString("messages.pluginDisabling"), null));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            if (!Database.dbConnect(instance.getServer().getConsoleSender()).isClosed()) {
-                Database.dbConnect(instance.getServer().getConsoleSender()).close();
-                BotLoad.api.shutdown();
+            if(!Database.getConnection(Bukkit.getConsoleSender()).isClosed()) {
+                Database.getConnection(Bukkit.getConsoleSender()).close();
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if(LoadBot.getApi() != null) {
+                LoadBot.getApi().shutdownNow();
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,36 +1,35 @@
 package me.creuch.dcroles.events;
 
 import me.creuch.dcroles.DCRoles;
-import me.creuch.dcroles.functions.Database;
-import me.creuch.dcroles.functions.Messages;
+import me.creuch.dcroles.Database;
+import me.creuch.dcroles.TextHandling;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 
 public class onJoinEvent implements Listener {
-    private DCRoles instance;
-    DCRoles DCRoles = new DCRoles();
-    Messages Messages = new Messages();
-    Database Database = new Database();
+
+    private final DCRoles instance;
+
+    public onJoinEvent(DCRoles plugin) {
+        this.instance = plugin;
+    }
 
     @EventHandler
-    public void onPlayerJoinEvent(PlayerJoinEvent e) throws SQLException {
-        instance = DCRoles.getInstance();
-        HashMap<String, String> userProfile = Database.getUserProfile(e.getPlayer());
-        if(userProfile.get("exists") == "true") { return; }
-        Long code = DCRoles.generateCode();
-        List<String> messages = instance.getConfig().getStringList("messages.firstJoin");
-        for (String s : messages) {
-            s = s.replace("{ROLE}", instance.getConfig().getString("text.defualtRoleReplace"));
-            s = s.replace("{CODE}", code.toString());
-            e.getPlayer().sendMessage(Messages.getMessage(s, e.getPlayer()));
-        }
-        Database.updateUser(e.getPlayer().getName(), "createUser", code.toString(), instance.getServer().getConsoleSender());
+    public void onPlayerJoinEvent(PlayerJoinEvent e) {
+        instance.setPlayer(e.getPlayer());
+        Database Database = new Database(instance);
+        HashMap<String, String> userData = Database.getUserData();
+        if(userData.get("exists") == "true") { instance.setPlayer(null); return; }
+        String code = instance.getCode();
+        userData = new HashMap<>();
+        userData.put("exists", "false");
+        userData.put("code", code);
+        Database.setUserData(userData);
+        instance.setPlayer(null);
     }
 }

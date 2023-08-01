@@ -1,82 +1,79 @@
 package me.creuch.dcroles.commands;
 
+import kotlin.collections.ArrayDeque;
 import me.creuch.dcroles.DCRoles;
-import me.creuch.dcroles.functions.Database;
-import me.creuch.dcroles.functions.Messages;
+import me.creuch.dcroles.Database;
+import me.creuch.dcroles.TextHandling;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 
+public class DCCode implements CommandExecutor, TabCompleter {
 
-public class DCCode implements CommandExecutor {
+    private final DCRoles instance;
 
-    DCRoles DCRoles = new DCRoles();
-    Messages Messages = new Messages();
-    me.creuch.dcroles.functions.Database Database = new Database();
+    public DCCode(DCRoles plugin) {
+        this.instance = plugin;
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (command.getName().equalsIgnoreCase("dccode")) {
-            try {
-                assert DCRoles.checkPluginStatus(commandSender);
-            } catch(SQLException e) {
-                e.printStackTrace();
-            }
-            DCRoles instance = DCRoles.instance;
-            HashMap<String, String> user;
-            String code;
-            try {
-                if (strings.length == 0) {
-                    if (commandSender instanceof Player) {
-                        if (commandSender.hasPermission("dcr.dccode.self")) {
-                            user = Database.getUserProfile((OfflinePlayer) commandSender);
-                            if(user.get("exists").equalsIgnoreCase("false")) {
-                                commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound"), (Player) commandSender));
-                                return true;
-                            }
-                            code = user.get("code");
-                            List<String> messages = instance.getConfig().getStringList("messages.userCodeCommandSelf");
-                            for (String msg : messages) {
-                                msg = msg.replace("{CODE}", code);
-                                commandSender.sendMessage(Messages.getMessage(msg, (Player) commandSender));
-                            }
-                        } else {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (Player) commandSender));
+            Database Database = new Database(instance);
+            TextHandling TextHandling = new TextHandling(instance);
+            YamlConfiguration langConfig = instance.getLangConfig();
+            // Get self code
+            if (strings.length == 0 || strings[0].equalsIgnoreCase(commandSender.getName())) {
+                if (commandSender instanceof HumanEntity) {
+                    if (commandSender.hasPermission("dcr.dccode.self")) {
+                        instance.setPlayer((OfflinePlayer) commandSender);
+                        for (String message : langConfig.getStringList("minecraft.user.codeMessage")) {
+                            commandSender.sendMessage(TextHandling.getFormatted(message));
                         }
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer"), (Player) commandSender));
+                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
                     }
                 } else {
-                    if (commandSender.hasPermission("dcr.dccode.others")) {
-                        user = Database.getUserProfile(Bukkit.getOfflinePlayer(strings[0]));
-                        if(user.get("exists").equalsIgnoreCase("false")) {
-                            commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.playerNotFound"), (Player) commandSender));
-                            return true;
-                        }
-                        code = user.get("code");
-                        List<String> messages = instance.getConfig().getStringList("messages.userCodeCommandOther");
-                        for (String msg1 : messages) {
-                            msg1 = msg1.replace("{CODE}", code);
-                            msg1 = msg1.replace("{USER}", strings[0]);
-                            commandSender.sendMessage(Messages.getMessage(msg1, (Player) commandSender));
+                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.onlyPlayerCommand")));
+                }
+            } else {
+                if (commandSender.hasPermission("dcr.dccode.others")) {
+                    instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
+                    if (Database.getUserData().get("exists") == "true") {
+                        for (String message : langConfig.getStringList("minecraft.user.codeMessageOther")) {
+                            commandSender.sendMessage(TextHandling.getFormatted(message));
                         }
                     } else {
-                        commandSender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (Player) commandSender));
+                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
                     }
+                } else {
+                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
                 }
-            } catch (SQLException e) {
-            throw new RuntimeException(e);
+            }
         }
-        }
+        instance.setPlayer(null);
         return true;
     }
-}
 
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+        if (command.getName().equalsIgnoreCase("dccode")) {
+            if (commandSender.hasPermission("dcr.dccode.others")) {
+                List<String> tabArgs = new ArrayDeque<>();
+                for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+                    tabArgs.add(op.getName());
+                }
+            }
+        }
+        return null;
+    }
+}

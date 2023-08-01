@@ -1,46 +1,37 @@
 package me.creuch.dcroles.commands;
 
 import me.creuch.dcroles.DCRoles;
-import me.creuch.dcroles.functions.Database;
-import me.creuch.dcroles.functions.Messages;
-import me.creuch.dcroles.inventory.BuilderInventory;
+import me.creuch.dcroles.inventory.builderinventory.BInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.sql.SQLException;
 
 public class DCMGui implements CommandExecutor {
 
-    DCRoles DCRoles = new DCRoles();
-    Messages Messages = new Messages();
-    me.creuch.dcroles.functions.Database Database = new Database();
-    BuilderInventory inventory = new BuilderInventory();
+    private final DCRoles instance;
+
+    public DCMGui(DCRoles plugin) {
+        this.instance = plugin;
+    }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (command.getName().equalsIgnoreCase("dcmgui")) {
-            DCRoles instance = DCRoles.instance;
-            try {
-                if (sender.hasPermission("dcr.dcmgui")) {
-                    if (sender instanceof HumanEntity) {
-                        inventory.setPlayer((Player) sender);
-                        ((Player) sender).openInventory(inventory.getInventory());
-                    } else {
-                        sender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.executorNotPlayer"), (Player) sender));
-                    }
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+        YamlConfiguration langConfig = instance.getLangConfig();
+        if(command.getName().equalsIgnoreCase("dcmgui")) {
+            if(commandSender.hasPermission("dcr.dcmgui")) {
+                if(commandSender instanceof HumanEntity) {
+                    ((HumanEntity) commandSender).openInventory(new BInventory(instance).getInventory());
                 } else {
-                    sender.sendMessage(Messages.getMessage(instance.getConfig().getString("messages.noPermission"), (Player) sender));
+                    commandSender.sendMessage(langConfig.getString("messages.user.onlyPlayerCommand"));
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } else {
+                commandSender.sendMessage(langConfig.getString("messages.user.noPermission"));
             }
         }
         return true;
     }
-
-
 }
+

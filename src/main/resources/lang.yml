@@ -1,0 +1,74 @@
+prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8»"
+
+replacement:
+  # What should the plugin replace 'default' rank from database to
+  defaultRole: "Gracz"
+  # False and True values
+  false: Nie
+  true: Tak
+  # Server name to replace in log embed
+  serverName: Survival
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Placeholders available in Minecraft.user section  #
+#   {USER} -> Username                              #
+#   {CODE} -> User's code                           #
+#   {ROLE} -> User's role                           #
+#   {USED} -> If user used their code               #
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+minecraft:
+  server:
+    pluginEnabling: "{P}&9 Włączanie pluginu..."
+    pluginDisabling: "{P}&9 Wyłączanie pluginu..."
+    pluginEnabled: "{P}&7 DCRoles v1.1 &azostał włączony!"
+    botLoaded: "{P}&a Bot został załadowany &8[&7{BOTNAME}&8]"
+    dbConnType: "{P}&7 Baza danych:&f {TYPE}"
+  user:
+    noPermission: "{P}&c Nie masz permisji."
+    playerNotFound: "{P}&c Nie znaleziono takiego gracza"
+    onlyPlayerCommand: "{P}&c Tylko gracz może to zrobić"
+    invalidRole: "{P}&c Podaj poprawną nazwę rangi"
+    successRoleGive: "{P}&9 Nadano rangę &7{ROLE}&9 graczowi &f{USER}"
+    successProfileRemove: "{P}&a Pomyślnie usunięto gracza &7{USER}"
+    successUsageReset: "{P}&9 Zresetowano uzycie kodu dla Gracza &f{USER}"
+    successNewCode: "{P}&9 Wygenerowano kod &7{CODE}&9 dla użytkownika&f {USER}"
+    promptRoleGive: "{P} <hover:show_text:'&8kliknij'><click:suggest_command:'/dcmcode {USER} setRole <RANGA>'><blue>Kliknij, aby nadać rangę graczowi <white>{USER}"
+    codeMessage:
+      - "{P} &9&lTwój kod:"
+      - "&8» &f{CODE}"
+    codeMessageOther:
+      - "{P} &9&lKod {USER}:"
+      - "&8» &f{CODE}"
+    profileCreated:
+      - "{P} &9Stworzono profil"
+      - "&8» &7Kod: &f{CODE}"
+      - "&8» &7Ranga: &f{ROLE}"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # #
+# Placeholders available in Discord section:  #
+#   {USER}  -> Username                       #
+#   {DNAME} -> Displayname                    #
+#   {CODE}  -> User's code                    #
+#   {ROLE}  -> User's role                    #
+#   {USED}  -> If user used their code        #
+# # # # # # # # # # # # # # # # # # # # # # # #
+
+discord:
+  invalidUsername: "Podany nick jest niepoprawny."
+  invalidCode: "Podany kod jest niepoprawny."
+  defaultRole: "Ten gracz nie ma kupionej rangi."
+  codeUsed: "Ten kod został już wykorzystany"
+  successRedeem: "**Kod poprawny!**\nNadaję rangę {ROLE}"
+  logEmbed:
+    channelToSend: XXX
+    title: "Nadano rangę | {SERVERNAME}"
+    color: "#66ff33"
+    description:
+      - "- **Nick MC**: {MCUSER}"
+      - "-------------"
+      - "- **Ranga**: {ROLE}"
+      - "-------------"
+      - "- **Discord**: {USER}"

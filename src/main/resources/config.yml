@@ -1,140 +1,73 @@
-bot:
+botSettings:
   token: XXX
-  giveRankName: "giverank"
-  commandDescription: "Uzyskaj rangę z serwera Minecraft"
-  mcNameOption: Twój nick Minecraft
-  codeOption: Twój kod z '/dccode'
+  # Settings of the discord command to give roles to user
+  dcCommandName: "giverank"
+  dcCommandDesc: "Uzyskaj rangę z serwera Minecraft"
+  options:
+    usernameName: nick
+    usernameDesc: Twój nick Minecraft
+    codeName: kod
+    codeDesc: Twój kod z "/dccode"
 
-sql:
-  # MySQL or SQLite
-  # Upon changing the database type, all data will be deleted
+database:
+  # Available: MySQL, SQLite
+  # Upon changing the database type, the data won"t be converted
   type: SQLite
-  # The rest is only required when using MySQL
-  dbAddress: 127.0.0.1:3306
-  dbName: XXX
-  dbUsername: root
-  dbPassword: XXX
+  table: dcroles
+  # Rest is only required when using MySQL
+  address: 127.0.0.1:3306
+  name: XXX
+  username: XXX
+  password: XXX
 
-ranks:
+roles:
   vip:
     discordIDs:
       - roleID
-    minecraftName: VIP
-
-text:
-  # PREFIX - {P}
-  prefix: "<#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8»"
-  # What should the plugin replace 'default' rank from database to
-  defualtRoleReplace: "Gracz"
-  # Null value
-  null: Brak
-  # /dcmcode Inventory Name
-  codeManageInvName: "<#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
-  # /dcmgui Inventory Name
-  codeManageTestInvName: "&5&lTEST &8&l» <#0039D1>&lM<#003FD5>&le<#0045D9>&ln<#004ADE>&le<#0050E2>&ld<#0056E6>&lż<#005CEA>&le<#0062EE>&lr <#0068F2>&lk<#006DF7>&lo<#0073FB>&ld<#0079FF>&lu"
-  # Name of your server (Gets replaced in log embed)
-  serverName: "Survival"
-  # What should the plugin replace 'false' and 'true' to
-  true: "Tak"
-  false: "Nie"
-
-
-messages:
-  # HEX - <#XXXXXX>
-  pluginEnabling: "{P}&9 Włączanie pluginu..."
-  pluginDisabling: "{P}&9 Wyłączanie pluginu..."
-  pluginEnabled: "{P}&7 {PLUGIN} &azostał włączony!"
-  pluginDisabled: "{P}&c Coś poszło nie tak! Popraw błędy i przeładuj plugin."
-  botLoaded: "{P}&a Bot został załadowany &8[&7{BOTNAME}&8]"
-  connNotClosed: "{P}&c Połączenie z bazą danych nie jest zamknięte!"
-  playerNotFound: "{P}&c Nie znaleziono takiego gracza"
-  executorNotPlayer: "{P}&c Tylko gracz może to zrobić"
-  removedUser: "{P}&a Pomyślnie usunięto gracza &7{USER}"
-  rankGive: "{P}&9 Nadano rangę &7{RANK}&9 graczowi &f{USER}"
-  codeUsageReset: "{P}&9 Zresetowano uzycie kodu dla Gracza &f{USER}"
-  badRank: "{P}&c Podaj poprawną nazwę rangi"
-  grantRank: "{P} <hover:show_text:'&8&okilik.'><click:suggest_command:'/dcmcode {USER} grantRank <RANGA>'><blue>Kliknij, aby nadać rangę graczowi <white>{USER}"
-  newCode: "{P}&9 Wygenerowano kod &7{CODE}&9 dla użytkownika&f {USER}"
-  helpFormat:
-    - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
-    - "&8» &9/dccode [Nick]&8-&f Pokazuje kod Gracza"
-    - "&8» &9/dcmcode <Nick> &8-&f Zarządza kodem Gracza"
-    - "&8» &9/dcmcode <Nick> grantRank <RANGA> &8-&f Nadaje rangę"
-    - "&8» &9/dcreload &8-&f Przeładowuje plugin"
-    - "&8≡≡≡≡══════ <#0083FF>&lD<#0C8BFF>&lC<#1894FF>&lR<#259CFF>&lo<#31A4FF>&ll<#3DADFF>&le<#49B5FF>&ls &8══════≡≡≡≡"
-  firstJoin:
-    - "{P} &7Nadano rangę&f {RANK}"
-    - "{P} &7Wygenerowano kod:&f {CODE}"
-  # Output of getting user's code
-  userCodeCommandSelf:
-    - "{P} <#1FFDFD>Twój kod:"
-    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
-  # Output of getting other user's code
-  userCodeCommandOther:
-    - "{P} <#1FFDFD>Kod&7 {USER}:"
-    - "{P} <click:copy_to_clipboard:{CODE}><hover:show_text:\"&7Kliknij, aby skopiować\"><#FFFFFF>{CODE}"
-  noPermission: "{P}&c Nie masz permisji."
-  discord:
-    invalidUsername: "Podany nick jest niepoprawny."
-    invalidCode: "Podany kod jest niepoprawny."
-    defaultRole: "Ten gracz nie ma kupionej rangi."
-    codeAlreadyUsed: "Ten kod został już wykorzystany"
-    succesRedeem: "**Kod poprawny!**\nNadaję rangę {RANK}"
-    logEmbed:
-      channelToSend: XXX
-      title: "Nadano rangę | {SERVERNAME}"
-      color: "#66ff33"
-      description:
-        - "- **Nick MC**: {USER}"
-        - "-------------"
-        - "- **Ranga**: {RANK}"
-        - "-------------"
-        - "- **Discord**: {DISCORD-EXECUTOR}"
 
 gui:
+  title: <#008DFF>&lD<#009BFF>&lC<#00A9FF>&lM<#00B7FF>&lC<#00C4FF>&lo<#00D2FF>&ld<#00E0FF>&le
+    &8» &9{USER}
   size: 36
-  # Background of GUI (Placed on AIR material) Set 'AIR' to disable
-  filler:
-    material: "GRAY_STAINED_GLASS_PANE"
+  # Background of GUI (Placed on AIR material) Set "AIR" to disable
+  filler: GRAY_STAINED_GLASS_PANE
   items:
     '11':
       type: REMOVE_USER
-      # Set to 'NONE' for no permission requirement
+      # Set to "NONE" for no permission requirement
       # REMOVE_USER, NEW_CODE, RESET_USAGE, SET_RANK, INFO_ITEM
       permission: dcr.gui.admin
       material: LAVA_BUCKET
-      name: §c§lUsuń użytkownika
+      name: <!italic><bold><red>Usuń użytkownika
       lore:
-        - §8» §7Usuwa dane użytkownika z bazy danych
+        - <!italic><dark_gray>» </dark_gray><gray>Usuwa dane użytkownika z bazy danych
     '13':
       type: INFO_ITEM
       permission: dcr.gui.info
       material: PLAYER_HEAD
-      name: §f§l{USER}
+      name: <!italic><bold><white>{USER}
       lore:
-        - '§8» §7Kod: §f{CODE}'
-        - '§8» §7Wykorzystano: §f{USED}'
-        - '§8» §7Ranga: §f{RANK}'
+        - '<!italic><dark_gray>» </dark_gray><gray>Kod: </gray><white>{CODE}'
+        - '<!italic><dark_gray>» </dark_gray><gray>Wykorzystano: </gray><white>{USED}'
+        - '<!italic><dark_gray>» </dark_gray><gray>Ranga: </gray><white>{ROLE}'
     '15':
       type: NEW_CODE
       permission: dcr.gui.admin
       material: ENDER_PEARL
-      name: §9§lNowy kod
+      name: <!italic><bold><blue>Nowy kod
       lore:
-        - §8» §7Tworzy nowy kod dla użytkownika
+        - <!italic><dark_gray>» </dark_gray><gray>Tworzy nowy kod dla użytkownika
     '21':
       type: RESET_USAGE
       permission: dcr.gui.admin
       material: COMPASS
-      name: §d§lZresetuj użycie
+      name: <!italic><bold><light_purple>Zresetuj użycie
       lore:
-        - §8» §7Resetuje użycie kodu użytkownika
+        - <!italic><dark_gray>» </dark_gray><gray>Resetuje użycie kodu użytkownika
     '23':
       type: SET_RANK
       permission: dcr.gui.admin
       material: SPRUCE_SIGN
-      name: §6§lUstaw rangę
+      name: <!italic><bold><gold>Ustaw rangę
       lore:
-        - §8» §7Ustawia rangę użytkownika
-
-tempGui:
+        - <!italic><dark_gray>» </dark_gray><gray>Ustawia rangę użytkownika

@@ -24,7 +24,7 @@ public class onJoinEvent implements Listener {
         instance.setPlayer(e.getPlayer());
         Database Database = new Database(instance);
         HashMap<String, String> userData = Database.getUserData();
-        if(userData.get("exists") == "true") { instance.setPlayer(null); return; }
+        if(userData != null && userData.get("exists") == "true") { instance.setPlayer(null); return; }
         String code = instance.getCode();
         userData = new HashMap<>();
         userData.put("exists", "false");

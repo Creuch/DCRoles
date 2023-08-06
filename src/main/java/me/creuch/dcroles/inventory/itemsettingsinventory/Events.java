@@ -51,7 +51,6 @@ public class Events implements Listener {
             BInventory = new BInventory(instance);
             config = instance.getMainConfig();
             langConfig = instance.getLangConfig();
-            Inventory cmInventory = new CMInventory(instance).getInventory();
             if (e.getSlot() == 11) {
                 SignInventory = new SignInventory(instance, "permission");
                 SignInventory.openSignGui((Player) e.getWhoClicked());

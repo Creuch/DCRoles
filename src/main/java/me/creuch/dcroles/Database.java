@@ -1,11 +1,9 @@
 package me.creuch.dcroles;
 
-import net.kyori.adventure.text.format.TextFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -87,14 +85,21 @@ public class Database {
             Statement stmt = connection.createStatement();
             // Get data
             ResultSet userProfile = stmt.executeQuery("SELECT * FROM " + getDBInfo().get("table") + " WHERE username = '" + p.getName() + "'");
-            // Check if user's profile exists
-            if(!userProfile.isClosed() && userProfile.getString("code") != null) { userData.put("exists", "true"); } else { userData.put("exists", "false"); return userData; }
-            userData.put("code", userProfile.getString("code"));
-            userData.put("role", userProfile.getString("role"));
-            userData.put("used", userProfile.getString("used").replace("0", langConfig.getString("replacement.false")).replace("1", langConfig.getString("replacement.true")));
-            connection.close();
-            stmt.close();
-            return userData;
+            if (userProfile.next()) {
+                // Check if user's profile exists
+                if (!userProfile.isClosed() && userProfile.getString("code") != null) {
+                    userData.put("exists", "true");
+                } else {
+                    userData.put("exists", "false");
+                    return userData;
+                }
+                userData.put("code", userProfile.getString("code"));
+                userData.put("role", userProfile.getString("role"));
+                userData.put("used", userProfile.getString("used").replace("0", langConfig.getString("replacement.false")).replace("1", langConfig.getString("replacement.true")));
+                connection.close();
+                stmt.close();
+                return userData;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -140,7 +145,14 @@ public class Database {
             updatedData.remove("exists");
             for(Map.Entry<String, String> entry : updatedData.entrySet()) {
                 if(updatedData.get(entry.getKey()) != null) {
-                    Integer setValue = stmt.executeUpdate("UPDATE " + getDBInfo().get("table") + " SET " + entry.getKey() + " = '" + entry.getValue() + "' WHERE username = '" + p.getName() + "'");
+                    if (entry.getValue().equalsIgnoreCase("true")) {
+                        Integer setValue = stmt.executeUpdate("UPDATE " + getDBInfo().get("table") + " SET " + entry.getKey() + " = true WHERE username = '" + p.getName() + "'");
+                    } else if (entry.getValue().equalsIgnoreCase("false")) {
+                        Integer setValue = stmt.executeUpdate("UPDATE " + getDBInfo().get("table") + " SET " + entry.getKey() + " = false WHERE username = '" + p.getName() + "'");
+                    } else {
+                        Integer setValue = stmt.executeUpdate("UPDATE " + getDBInfo().get("table") + " SET " + entry.getKey() + " = '" + entry.getValue() + "' WHERE username = '" + p.getName() + "'");
+                    }
+
                 }
             }
             connection.close();

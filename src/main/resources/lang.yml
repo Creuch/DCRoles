@@ -25,6 +25,7 @@ minecraft:
     pluginEnabled: "{P}&7 DCRoles v1.1 &azostał włączony!"
     botLoaded: "{P}&a Bot został załadowany &8[&7{BOTNAME}&8]"
     dbConnType: "{P}&7 Baza danych:&f {TYPE}"
+    savedGui: "{P} &9Pomyślnie zapisano Gui"
   user:
     noPermission: "{P}&c Nie masz permisji."
     playerNotFound: "{P}&c Nie znaleziono takiego gracza"
@@ -37,10 +38,10 @@ minecraft:
     promptRoleGive: "{P} <hover:show_text:'&8kliknij'><click:suggest_command:'/dcmcode {USER} setRole <RANGA>'><blue>Kliknij, aby nadać rangę graczowi <white>{USER}"
     codeMessage:
       - "{P} &9&lTwój kod:"
-      - "&8» &f{CODE}"
+      - '<click:copy_to_clipboard:{CODE}><hover:show_text:"<blue>Kliknij, aby skopiować"><dark_gray>» <white>{CODE}'
     codeMessageOther:
       - "{P} &9&lKod {USER}:"
-      - "&8» &f{CODE}"
+      - '<click:copy_to_clipboard:{CODE}><hover:show_text:"<blue>Kliknij, aby skopiować"><dark_gray>» <white>{CODE}'
     profileCreated:
       - "{P} &9Stworzono profil"
       - "&8» &7Kod: &f{CODE}"

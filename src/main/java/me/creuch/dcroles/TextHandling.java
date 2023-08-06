@@ -1,6 +1,5 @@
 package me.creuch.dcroles;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import net.dv8tion.jda.api.entities.Member;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -47,6 +46,7 @@ public class TextHandling {
         Database Database = new Database(instance);
         langConfig = instance.getLangConfig();
         HashMap<String, String> userData = Database.getUserData();
+        assert userData != null;
         message = message.replace("{USER}", "" + instance.getPlayer().getName());
         message = message.replace("{CODE}", "" + userData.get("code"));
         message = message.replace("{ROLE}", "" + userData.get("role").replace("default", "" + langConfig.getString("replacement.defaultRole")));

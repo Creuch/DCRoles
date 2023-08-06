@@ -46,7 +46,7 @@ public class SignInventory {
                 if(type.equalsIgnoreCase("permission")) {
                     modification.put("permission", lines[0]);
                 } else {
-                    if(config.getConfigurationSection("roles").getKeys(false).contains(lines[0]) || lines[0].equalsIgnoreCase("default")) {
+                    if( lines[0].equalsIgnoreCase("default") || config.getConfigurationSection("roles") != null && config.getConfigurationSection("roles").getKeys(false).contains(lines[0])) {
                         HashMap<String, String> userData = new HashMap<>();
                         userData.put("exists", "true");
                         userData.put("role", lines[0]);

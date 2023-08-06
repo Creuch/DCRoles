@@ -90,6 +90,9 @@ public final class DCRoles extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        mainConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
+        langConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml"));
+        TextHandling = new TextHandling(this);
         // Check if BKCommonLib is installed
         if(Bukkit.getPluginManager().getPlugin("BKCommonLib") == null || !Bukkit.getPluginManager().getPlugin("BKCommonLib").isEnabled()){
             Bukkit.getConsoleSender().sendMessage(TextHandling.getFormatted("{P}&c&l Nie znaleziono pluginu BKCommonLib!"));
@@ -97,10 +100,7 @@ public final class DCRoles extends JavaPlugin {
             return;
         }
         Database = new Database(this);
-        TextHandling = new TextHandling(this);
         // Load config files
-        mainConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
-        langConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml"));
         reloadPlugin(getServer().getConsoleSender());
         // Declare Commands
         this.getCommand("dcreload").setExecutor(new DCReload(this));

@@ -44,12 +44,12 @@ public class DCMCode implements CommandExecutor, TabCompleter {
                 if (strings.length == 0 || strings.length == 1 && strings[0].equalsIgnoreCase(commandSender.getName())) {
                     if (commandSender.hasPermission("dcr.dcmcode.self")) {
                         instance.setPlayer((OfflinePlayer) commandSender);
-                        CMInventory inventory = new CMInventory(instance);
+                        CMInventory inventory = new CMInventory(instance, (Player) commandSender);
                         ((HumanEntity) commandSender).openInventory(inventory.getInventory());
                     } else {
                         commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
                     }
-                } else if(strings[1].equalsIgnoreCase("setRole")) {
+                } else if(strings.length > 1 && strings[1].equalsIgnoreCase("setRole")) {
                     if(commandSender.hasPermission("dcr.dcmcode.others")) {
                         if (strings.length >= 3) {
                             instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
@@ -75,8 +75,12 @@ public class DCMCode implements CommandExecutor, TabCompleter {
                 } else {
                     if (commandSender.hasPermission("dcr.dcmcode.others")) {
                         instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
-                        CMInventory inventory = new CMInventory(instance);
-                        ((HumanEntity) commandSender).openInventory(inventory.getInventory());
+                        if(Database.getUserData() != null && Database.getUserData().get("exists") == "true") {
+                            CMInventory inventory = new CMInventory(instance, (Player) commandSender);
+                            ((HumanEntity) commandSender).openInventory(inventory.getInventory());
+                        } else {
+                            commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
+                        }
                     } else {
                         commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
                     }

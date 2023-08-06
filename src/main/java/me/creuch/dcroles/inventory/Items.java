@@ -29,10 +29,10 @@ public class Items {
         this.instance = plugin;
     }
 
-    public ItemStack fillerItem(String path) {
+    public ItemStack fillerItem() {
         config = instance.getMainConfig();
         TextHandling = new TextHandling(instance);
-        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getString(path + ".filler")));
+        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getString("gui.filler")));
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.displayName(TextHandling.getFormatted("&7 "));
         itemStack.setItemMeta(itemMeta);

@@ -9,7 +9,6 @@ import me.creuch.dcroles.inventory.itemsettingsinventory.ISInventory;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -67,19 +66,31 @@ public class Events implements Listener {
             TextHandling = new TextHandling(instance);
             config = instance.getMainConfig();
             langConfig = instance.getLangConfig();
-            Inventory cmInventory = new CMInventory(instance).getInventory();
             if (e.getSlot() == 12) {
+                e.getWhoClicked().closeInventory();
+                e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.savedGui")));
                 Inventory bInventory = instance.getInventory();
+                ConfigurationSection section = config.getConfigurationSection("gui.items");
+                for(String s : section.getKeys(true)) {
+                    section.set(s, null);
+                }
+                try {
+                    config.save(new File(instance.getDataFolder(), "config.yml"));
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
                 int i = 0;
                 for(ItemStack is : bInventory) {
                     if(is != null) {
                         if(is.getType() != Material.AIR) {
                             ItemMeta itemMeta = is.getItemMeta();
                             List<Component> lore = itemMeta.lore();
-                            for(int lLine = 0; lLine < 4; lLine++) {
-                                lore.remove(lore.size() - 1);
+                            if (lore != null && lore.size() >= 4) {
+                                for (int lLine = 0; lLine < 4; lLine++) {
+                                    lore.remove(lore.size() - 1);
+                                }
+                                itemMeta.lore(lore);
                             }
-                            itemMeta.lore(lore);
                             is.setItemMeta(itemMeta);
                             Items.setToConfig("gui.items." + i, is);
                         }
@@ -94,22 +105,21 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
-        if (!(e.getInventory().getHolder() instanceof BInventory)) {
-            return;
-        }
-        if(e.getReason().equals(InventoryCloseEvent.Reason.OPEN_NEW)) {
-            return;
-        }
-        inventory = e.getInventory();
-        instance.setInventory(inventory);
-        Player player = (Player) e.getPlayer();
-        // Open ConfirmInventory after a 1 tick (0.05 seconds) delay
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ConfirmInventory confirmInventory = new ConfirmInventory(instance);
-                player.openInventory(confirmInventory.getInventory());
+        if ((e.getInventory().getHolder() instanceof BInventory)) {
+            if (e.getReason().equals(InventoryCloseEvent.Reason.OPEN_NEW)) {
+                return;
             }
-        }.runTaskLater(instance, 1);
+            inventory = e.getInventory();
+            instance.setInventory(inventory);
+            Player player = (Player) e.getPlayer();
+            // Open ConfirmInventory after a 1 tick (0.05 seconds) delay
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    ConfirmInventory confirmInventory = new ConfirmInventory(instance);
+                    player.openInventory(confirmInventory.getInventory());
+                }
+            }.runTaskLater(instance, 1);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory.codemanageinventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
@@ -21,8 +22,6 @@ public class Events implements Listener {
     private Database Database;
     private TextHandling TextHandling;
     private SignInventory SignInventory;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
     private CMInventory CMInventory;
     private static Inventory inventory;
 
@@ -44,13 +43,12 @@ public class Events implements Listener {
         Database = new Database(instance);
         TextHandling = new TextHandling(instance);
         SignInventory = new SignInventory(instance, "role");
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
+        Config config = new Config(instance);
         Items Items = new Items(instance);
         CMInventory = new CMInventory(instance, (Player) e.getWhoClicked());
-        if (config.getString("gui.items." + e.getSlot() + ".permission") != null) {
-            if (config.getString("gui.items." + e.getSlot() + ".permission").equalsIgnoreCase("none") ||  e.getWhoClicked().hasPermission(config.getString("gui.items." + e.getSlot() + ".permission"))) {
-                String type = config.getString("gui.items." + e.getSlot() + ".type");
+        if (config.getValue("mainConfig", "gui.items." + e.getSlot() + ".permission") != null) {
+            if (config.getValue("mainConfig", "gui.items." + e.getSlot() + ".permission").equalsIgnoreCase("none") ||  e.getWhoClicked().hasPermission(config.getValue("mainConfig", "gui.items." + e.getSlot() + ".permission"))) {
+                String type = config.getValue("mainConfig", "gui.items." + e.getSlot() + ".type");
                 if (type == null || type.isEmpty() || type == "null") {
                     return;
                 }
@@ -59,7 +57,7 @@ public class Events implements Listener {
                 switch (type) {
                     case ("REMOVE_USER"):
                         Database.removeUserProfile();
-                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.successProfileRemove")));
+                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.successProfileRemove")));
                         e.getWhoClicked().openInventory(CMInventory.getInventory());
                         return;
                     case ("NEW_CODE"):
@@ -67,7 +65,7 @@ public class Events implements Listener {
                         userData.put("exists", "true");
                         userData.put("code", instance.getCode());
                         Database.setUserData(userData);
-                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.successNewCode")));
+                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.successNewCode")));
                         e.getWhoClicked().openInventory(CMInventory.getInventory());
                         return;
                     case ("RESET_USAGE"):
@@ -76,14 +74,14 @@ public class Events implements Listener {
                         userData.put("code", instance.getCode());
                         userData.put("used", "false");
                         Database.setUserData(userData);
-                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.successUsageReset")));
+                        e.getWhoClicked().sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.successUsageReset")));
                         e.getWhoClicked().openInventory(CMInventory.getInventory());
                         return;
                     case ("SET_RANK"):
                         if (Database.getUserData().get("exists") == "true") {
                             SignInventory.openSignGui((Player) e.getWhoClicked());
                         } else {
-                            e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
+                            e.getWhoClicked().sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.playerNotFound")));
                         }
                 }
             }

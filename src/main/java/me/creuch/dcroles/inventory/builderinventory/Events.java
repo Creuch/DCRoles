@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory.builderinventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
@@ -32,8 +33,6 @@ public class Events implements Listener {
     private Items Items;
     private Database Database;
     private TextHandling TextHandling;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
 
     public Events(DCRoles instance) {
         this.instance = instance;
@@ -45,6 +44,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
+        Config config = new Config(instance);
         BInventory = new BInventory(instance);
         if ((e.getInventory().getHolder() instanceof BInventory)) {
             if (e.getClick().isRightClick()) {
@@ -64,18 +64,18 @@ public class Events implements Listener {
             Items = new Items(instance);
             Database = new Database(instance);
             TextHandling = new TextHandling(instance);
-            config = instance.getMainConfig();
-            langConfig = instance.getLangConfig();
             if (e.getSlot() == 12) {
                 e.getWhoClicked().closeInventory();
-                e.getWhoClicked().sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.savedGui")));
+                e.getWhoClicked().sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.server.savedGui")));
                 Inventory bInventory = instance.getInventory();
-                ConfigurationSection section = config.getConfigurationSection("gui.items");
+                ConfigurationSection section = config.getMainConfig().getConfigurationSection("gui.items");
                 for(String s : section.getKeys(true)) {
                     section.set(s, null);
                 }
                 try {
-                    config.save(new File(instance.getDataFolder(), "config.yml"));
+                    config.getMainConfig().save(new File(instance.getDataFolder(), "config.yml"));
+                    config.loadConfigs();
+                    config = new Config(instance);
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
@@ -97,6 +97,12 @@ public class Events implements Listener {
                     }
                     i += 1;
                 }
+                try {
+                    config.getMainConfig().save(new File(instance.getDataFolder(), "config.yml"));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                config.loadConfigs();
             } else if (e.getSlot() == 14) {
                 e.getWhoClicked().openInventory(instance.getInventory());
             }

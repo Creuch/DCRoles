@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.TextHandling;
 import net.kyori.adventure.text.Component;
@@ -7,6 +8,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -22,7 +24,7 @@ import java.util.List;
 public class Items {
 
     private final DCRoles instance;
-    private YamlConfiguration config;
+    private Config config;
     private TextHandling TextHandling;
 
     public Items(DCRoles plugin) {
@@ -30,9 +32,9 @@ public class Items {
     }
 
     public ItemStack fillerItem() {
-        config = instance.getMainConfig();
+        config = new Config(instance);
         TextHandling = new TextHandling(instance);
-        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getString("gui.filler")));
+        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getValue("mainConfig", "gui.filler")));
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.displayName(TextHandling.getFormatted("&7 "));
         itemStack.setItemMeta(itemMeta);
@@ -40,25 +42,25 @@ public class Items {
     }
 
     public ItemStack fromConfig(String path, Boolean detailedDesc) {
-        config = instance.getMainConfig();
+        config = new Config(instance);
         TextHandling = new TextHandling(instance);
-        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getString(path + ".material")));
+        ItemStack itemStack = new ItemStack(Material.getMaterial(config.getValue("mainConfig", path + ".material")));
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(TextHandling.getFormatted(config.getString(path + ".name")).decoration(TextDecoration.ITALIC, false));
+        itemMeta.displayName(TextHandling.getFormatted(config.getValue("mainConfig", path + ".name")).decoration(TextDecoration.ITALIC, false));
         List<Component> lore = new ArrayList<>();
-        for(String loreLine : config.getStringList(path + ".lore")) {
+        for(String loreLine : config.getList("mainConfig", path + ".lore")) {
             lore.add(TextHandling.getFormatted(loreLine).decoration(TextDecoration.ITALIC, false));
         }
         if(detailedDesc) {
             lore.add(TextHandling.getFormatted("&8 "));
             lore.add(TextHandling.getFormatted("&9&lUstawienia:"));
-            lore.add(TextHandling.getFormatted("&8» &3Typ: &7" + config.getString(path + ".type")));
-            lore.add(TextHandling.getFormatted("&8» &3Permisja: &7" + config.getString(path + ".permission")));
+            lore.add(TextHandling.getFormatted("&8» &3Typ: &7" + config.getValue("mainConfig", path + ".type")));
+            lore.add(TextHandling.getFormatted("&8» &3Permisja: &7" + config.getValue("mainConfig", path + ".permission")));
         }
         NamespacedKey key = new NamespacedKey(instance, "dcrolesType");
-        itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, config.getString(path + ".type"));
+        itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, config.getValue("mainConfig", path + ".type"));
         key = new NamespacedKey(instance, "dcrolesPermission");
-        itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, config.getString(path + ".permission"));
+        itemMeta.getPersistentDataContainer().set(key, PersistentDataType.STRING, config.getValue("mainConfig", path + ".permission"));
         itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
         // Set owning player
@@ -71,7 +73,7 @@ public class Items {
     }
 
     public void setToConfig(String path, ItemStack itemStack) {
-        config = instance.getMainConfig();
+        YamlConfiguration yamlConfig = (YamlConfiguration) instance.getConfig();
         TextHandling = new TextHandling(instance);
         String material = itemStack.getType().toString();
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -85,13 +87,13 @@ public class Items {
         key = new NamespacedKey(instance, "dcrolesPermission");
         String permission = itemMeta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
         // Save to config
-        config.set(path + ".type", type);
-        config.set(path + ".permission", permission);
-        config.set(path + ".material", material);
-        config.set(path + ".name", displayName);
-        config.set(path + ".lore", lore);
+        yamlConfig.set(path + ".type", type);
+        yamlConfig.set(path + ".permission", permission);
+        yamlConfig.set(path + ".material", material);
+        yamlConfig.set(path + ".name", displayName);
+        yamlConfig.set(path + ".lore", lore);
         try {
-            config.save(new File(instance.getDataFolder(), "config.yml"));
+            yamlConfig.save(new File(instance.getDataFolder(), "config.yml"));
         } catch (IOException e) {
             e.printStackTrace();
         }

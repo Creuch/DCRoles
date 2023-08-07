@@ -4,13 +4,13 @@ import kotlin.collections.ArrayDeque;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
+import me.creuch.dcroles.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,33 +30,33 @@ public class DCCode implements CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("dccode")) {
             Database Database = new Database(instance);
             TextHandling TextHandling = new TextHandling(instance);
-            YamlConfiguration langConfig = instance.getLangConfig();
+            Config config = new Config(instance);
             // Get self code
             if (strings.length == 0 || strings[0].equalsIgnoreCase(commandSender.getName())) {
                 if (commandSender instanceof HumanEntity) {
                     if (commandSender.hasPermission("dcr.dccode.self")) {
                         instance.setPlayer((OfflinePlayer) commandSender);
-                        for (String message : langConfig.getStringList("minecraft.user.codeMessage")) {
+                        for (String message : config.getList("langConfig", "minecraft.user.codeMessage")) {
                             commandSender.sendMessage(TextHandling.getFormatted(message));
                         }
                     } else {
-                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
+                        commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.noPermission")));
                     }
                 } else {
-                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.onlyPlayerCommand")));
+                    commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.onlyPlayerCommand")));
                 }
             } else {
                 if (commandSender.hasPermission("dcr.dccode.others")) {
                     instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
                     if (Database.getUserData().get("exists") == "true") {
-                        for (String message : langConfig.getStringList("minecraft.user.codeMessageOther")) {
+                        for (String message : config.getList("langConfig", "minecraft.user.codeMessageOther")) {
                             commandSender.sendMessage(TextHandling.getFormatted(message));
                         }
                     } else {
-                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
+                        commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.playerNotFound")));
                     }
                 } else {
-                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
+                    commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.noPermission")));
                 }
             }
         }

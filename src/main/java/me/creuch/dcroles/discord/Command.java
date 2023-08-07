@@ -3,10 +3,13 @@ package me.creuch.dcroles.discord;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
+import me.creuch.dcroles.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ContextException;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -17,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import javax.management.relation.RoleNotFoundException;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
@@ -26,31 +30,29 @@ public class Command extends ListenerAdapter {
     private final DCRoles instance;
     private Database Database;
     private TextHandling TextHandling;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
+    private Config config;
 
     public Command(DCRoles instance) {
         this.instance = instance;
+        this.config = new Config(instance);
     }
 
     public CommandData getCommand() {
-        config = instance.getMainConfig();
-        OptionData name = new OptionData(OptionType.STRING, config.getString("botSettings.options.usernameName"), config.getString("botSettings.options.usernameDesc"), true);
-        OptionData code = new OptionData(OptionType.STRING, config.getString("botSettings.options.codeName"), config.getString("botSettings.options.codeDesc"), true);
-        return Commands.slash(config.getString("botSettings.dcCommandName"), config.getString("botSettings.dcCommandDesc")).addOptions(name, code);
+        OptionData name = new OptionData(OptionType.STRING, config.getValue("mainConfig", "botSettings.options.usernameName"), config.getValue("mainConfig", "botSettings.options.usernameDesc"), true);
+        OptionData code = new OptionData(OptionType.STRING, config.getValue("mainConfig", "botSettings.options.codeName"), config.getValue("mainConfig", "botSettings.options.codeDesc"), true);
+        return Commands.slash(config.getValue("mainConfig", "botSettings.dcCommandName"), config.getValue("mainConfig", "botSettings.dcCommandDesc")).addOptions(name, code);
     }
 
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        Role role = null;
         try {
             Database = new Database(instance);
             TextHandling = new TextHandling(instance);
-            config = instance.getMainConfig();
-            langConfig = instance.getLangConfig();
             // Get provided data
-            String name = event.getOption(config.getString("botSettings.options.usernameName")).getAsString();
-            String code = event.getOption(config.getString("botSettings.options.codeName")).getAsString();
+            String name = event.getOption(config.getValue("mainConfig", "botSettings.options.usernameName")).getAsString();
+            String code = event.getOption(config.getValue("mainConfig", "botSettings.options.codeName")).getAsString();
             OfflinePlayer p = Bukkit.getOfflinePlayer(name);
             instance.setPlayer(p);
             HashMap<String, String> userData = Database.getUserData();
@@ -60,29 +62,29 @@ public class Command extends ListenerAdapter {
                 return;
             }
             if (userData.get("exists").equalsIgnoreCase("false")) {
-                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), langConfig.getString("discord.invalidUsername"))).setEphemeral(true).queue();
+                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), config.getValue("langConfig", "discord.invalidUsername"))).setEphemeral(true).queue();
                 return;
             }
             if (!userData.get("code").equalsIgnoreCase(code)) {
-                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), langConfig.getString("discord.invalidCode"))).setEphemeral(true).queue();
+                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), config.getValue("langConfig", "discord.invalidCode"))).setEphemeral(true).queue();
                 return;
             }
-            if (userData.get("used").equalsIgnoreCase("true") || userData.get("used").equalsIgnoreCase("1") || userData.get("used").equalsIgnoreCase(langConfig.getString("replacement.true"))) {
-                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), langConfig.getString("discord.codeUsed"))).setEphemeral(true).queue();
+            if (userData.get("used").equalsIgnoreCase("true") || userData.get("used").equalsIgnoreCase("1") || userData.get("used").equalsIgnoreCase(config.getValue("langConfig", "replacement.true"))) {
+                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), config.getValue("langConfig", "discord.codeUsed"))).setEphemeral(true).queue();
                 return;
             }
             if (userData.get("role").equalsIgnoreCase("default")) {
-                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), langConfig.getString("discord.defaultRole"))).setEphemeral(true).queue();
+                event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), config.getValue("langConfig", "discord.defaultRole"))).setEphemeral(true).queue();
                 return;
             }
             userData.put("used", "true");
             Database.setUserData(userData);
-            event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), langConfig.getString("discord.successRedeem"))).setEphemeral(true).queue();
+            event.reply(TextHandling.replaceDiscordPlaceholders(p.getName(), event.getMember(), config.getValue("langConfig", "discord.successRedeem"))).setEphemeral(true).queue();
             // Give roles to user
-            List<String> discordIDs = config.getStringList("roles." + userData.get("role") + ".discordIDs");
+            List<String> discordIDs = config.getList("mainConfig", "roles." + userData.get("role") + ".discordIDs");
             for (String id : discordIDs) {
                 assert member != null;
-                Role role = event.getGuild().getRoleById(id);
+                role = event.getGuild().getRoleById(id);
                 if (role == null) {
                     Bukkit.getConsoleSender().sendMessage(TextHandling.getFormatted("{P}&c Invalid role ID\n&8» &7RoleName: " + userData.get("role") + "\n&8» &7ID: " + id));
                 } else {
@@ -90,9 +92,9 @@ public class Command extends ListenerAdapter {
                 }
             }
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle(langConfig.getString("discord.logEmbed.title").replace("{SERVERNAME}", langConfig.getString("replacement.serverName")));
+            eb.setTitle(config.getValue("langConfig", "discord.logEmbed.title").replace("{SERVERNAME}", config.getValue("langConfig", "replacement.serverName")));
             int i = 0;
-            for (String descLine : langConfig.getStringList("discord.logEmbed.description")) {
+            for (String descLine : config.getList("langConfig", "discord.logEmbed.description")) {
                 if (i > 0) {
                     descLine = "\n" + descLine;
                 }
@@ -100,10 +102,17 @@ public class Command extends ListenerAdapter {
                 eb.appendDescription(descLine);
                 i += 1;
             }
-            eb.setColor(Color.decode(langConfig.getString("discord.logEmbed.color")));
-            event.getGuild().getTextChannelById(langConfig.getString("discord.logEmbed.channelToSend")).sendMessageEmbeds(eb.build()).queue();
+            eb.setColor(Color.decode(config.getValue("langConfig", "discord.logEmbed.color")));
+            event.getGuild().getTextChannelById(config.getValue("langConfig", "discord.logEmbed.channelToSend")).sendMessageEmbeds(eb.build()).queue();
         } catch (HierarchyException e) {
             Bukkit.getServer().getConsoleSender().sendMessage(TextHandling.getFormatted("{P} &cRola, którą próbowałem dodać jest za nisko!"));
+            event.reply("**Wystąpił błąd!**\nSkontaktuj się z administracją").setEphemeral(true).queue();
+        } catch (NumberFormatException | NullPointerException e) {
+            if(role == null) {
+                Bukkit.getServer().getConsoleSender().sendMessage(TextHandling.getFormatted("{P} &cRola, którą próbowałem dodać nie istnieje!"));
+                event.reply("**Wystąpił błąd!**\nSkontaktuj się z administracją").setEphemeral(true).queue();
+            }
+        } catch (ErrorResponseException e) {
             event.reply("**Wystąpił błąd!**\nSkontaktuj się z administracją").setEphemeral(true).queue();
         }
     }

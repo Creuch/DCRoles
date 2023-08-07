@@ -5,6 +5,7 @@ import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
 import me.creuch.dcroles.inventory.builderinventory.BInventory;
+import me.creuch.dcroles.Config;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -22,9 +23,8 @@ public class SignInventory {
     private final String type;
     private BInventory BInventory;
     private Database Database;
-    private me.creuch.dcroles.TextHandling TextHandling;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
+    private TextHandling TextHandling;
+    private Config config;
     private SignEditDialog signEditDialog;
 
     public SignInventory(DCRoles instance, String type) {
@@ -35,25 +35,25 @@ public class SignInventory {
     public void openSignGui(Player p) {
         BInventory = new BInventory(instance);
         Database = new Database(instance);
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
+        config = new Config(instance);
         TextHandling = new TextHandling(instance);
         signEditDialog = new SignEditDialog() {
             @Override
             public void onClosed(Player player, String[] lines) {
+                YamlConfiguration yamlConfig = (YamlConfiguration) instance.getConfig();
                 if(lines[0] == null || lines[0].isEmpty()) { openSignGui(player); return; }
                 HashMap<String, String> modification = new HashMap<>();
                 if(type.equalsIgnoreCase("permission")) {
                     modification.put("permission", lines[0]);
                 } else {
-                    if( lines[0].equalsIgnoreCase("default") || config.getConfigurationSection("roles") != null && config.getConfigurationSection("roles").getKeys(false).contains(lines[0])) {
+                    if( lines[0].equalsIgnoreCase("default") || yamlConfig.getConfigurationSection("roles") != null && yamlConfig.getConfigurationSection("roles").getKeys(false).contains(lines[0])) {
                         HashMap<String, String> userData = new HashMap<>();
                         userData.put("exists", "true");
                         userData.put("role", lines[0]);
                         Database.setUserData(userData);
-                        player.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.successRoleGive")));
+                        player.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.successRoleGive")));
                     } else {
-                        player.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.invalidRole")));
+                        player.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.invalidRole")));
                     }
                     return;
                 }

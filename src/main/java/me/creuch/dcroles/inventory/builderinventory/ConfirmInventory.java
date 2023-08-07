@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory.builderinventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.TextHandling;
 import me.creuch.dcroles.inventory.Items;
@@ -17,8 +18,6 @@ public class ConfirmInventory implements InventoryHolder {
     private final DCRoles instance;
     private me.creuch.dcroles.TextHandling TextHandling;
     private Items GetItem;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
 
     public ConfirmInventory(DCRoles plugin) {
         this.instance = plugin;
@@ -28,8 +27,7 @@ public class ConfirmInventory implements InventoryHolder {
     public @NotNull Inventory getInventory() {
         TextHandling = new TextHandling(instance);
         GetItem = new Items(instance);
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
+        Config config = new Config(instance);
         Inventory inv;
         inv = Bukkit.createInventory(
                 this,
@@ -51,7 +49,7 @@ public class ConfirmInventory implements InventoryHolder {
         inv.setItem(14, itemStack);
         // Filler
         for(int i = 0; i < 27; i++) {
-            ItemStack filler = new ItemStack(Material.getMaterial(config.getString("gui.filler")));
+            ItemStack filler = new ItemStack(Material.getMaterial(config.getValue("mainConfig", "gui.filler")));
             ItemMeta fillerMeta = filler.getItemMeta();
             fillerMeta.displayName(TextHandling.getFormatted("&7 "));
             filler.setItemMeta(fillerMeta);

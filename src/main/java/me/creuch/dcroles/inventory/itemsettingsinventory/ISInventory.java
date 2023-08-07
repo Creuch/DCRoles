@@ -33,8 +33,6 @@ public class ISInventory implements InventoryHolder {
         inventory = instance.getInventory();
         TextHandling = new TextHandling(instance);
         GetItem = new Items(instance);
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
         Inventory inv;
         inv = Bukkit.createInventory(
                 this,

@@ -49,8 +49,6 @@ public class Events implements Listener {
             Database = new Database(instance);
             TextHandling = new TextHandling(instance);
             BInventory = new BInventory(instance);
-            config = instance.getMainConfig();
-            langConfig = instance.getLangConfig();
             if (e.getSlot() == 11) {
                 SignInventory = new SignInventory(instance, "permission");
                 SignInventory.openSignGui((Player) e.getWhoClicked());

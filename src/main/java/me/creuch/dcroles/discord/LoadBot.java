@@ -2,9 +2,11 @@ package me.creuch.dcroles.discord;
 
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.TextHandling;
+import me.creuch.dcroles.Config;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import org.bukkit.command.CommandSender;
@@ -19,9 +21,8 @@ public class LoadBot extends ListenerAdapter {
     private final DCRoles instance;
     private TextHandling TextHandling;
     private Command Command;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
-    private static JDA api;
+    private Config config;
+    private JDA api;
     private final CommandSender commandSender;
 
     public LoadBot(DCRoles instance, CommandSender commandSender) {
@@ -42,16 +43,26 @@ public class LoadBot extends ListenerAdapter {
     }
 
     public void login() {
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
-        TextHandling = new TextHandling(instance);
-        if (api != null) {
+        try {
+            config = new Config(instance);
+            TextHandling = new TextHandling(instance);
+            if (api != null) {
+                api.shutdown();
+            }
+            api = JDABuilder.createDefault(config.getValue("mainConfig", "botSettings.token")).build();
+            api.addEventListener(this);
+            api.addEventListener(new Command(instance));
+            commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.server.botLoaded").replace("{BOTNAME", api.getSelfUser().getName())));
+        } catch (InvalidTokenException e ) {
+            instance.getServer().getConsoleSender().sendMessage(TextHandling.getFormatted("{P}&c Podany token jest niepoprawny"));
+            instance.getServer().getPluginManager().disablePlugin(instance);
             api.shutdown();
+        } catch (NullPointerException e ) {
+            assert (config.getValue("mainConfig", "botSettings.token") == null);
+            instance.getServer().getConsoleSender().sendMessage(TextHandling.getFormatted("{P}&c Podany token jest niepoprawny"));
+            instance.getServer().getPluginManager().disablePlugin(instance);
+
         }
-        api = JDABuilder.createDefault(config.getString("botSettings.token")).build();
-        api.addEventListener(this);
-        api.addEventListener(new Command(instance));
-        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.server.botLoaded").replace("{BOTNAME", api.getSelfUser().getName())));
     }
 
 }

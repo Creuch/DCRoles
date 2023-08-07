@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory.codemanageinventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.TextHandling;
 import me.creuch.dcroles.inventory.Items;
@@ -21,8 +22,6 @@ public class CMInventory implements InventoryHolder {
     private final Player openP;
     private me.creuch.dcroles.TextHandling TextHandling;
     private Items GetItem;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
     private Items Items;
 
     public CMInventory(DCRoles plugin, Player openP) {
@@ -34,16 +33,15 @@ public class CMInventory implements InventoryHolder {
     public @NotNull Inventory getInventory() {
         TextHandling = new TextHandling(instance);
         GetItem = new Items(instance);
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
         Items = new Items(instance);
+        Config config = new Config(instance);
         Inventory inventory = Bukkit.createInventory(
                 this,
-                config.getInt("gui.size"),
-                TextHandling.getFormatted(config.getString("gui.title"))
+                Integer.parseInt(config.getValue("mainConfig", "gui.size")),
+                TextHandling.getFormatted(config.getValue("mainConfig", "gui.title"))
         );
         // Set config items
-        for (String slot : config.getConfigurationSection("gui.items").getKeys(false)) {
+        for (String slot : config.getMainConfig().getConfigurationSection("gui.items").getKeys(false)) {
             ItemStack itemStack = GetItem.fromConfig("gui.items." + slot, false);
             ItemMeta itemMeta = itemStack.getItemMeta();
             NamespacedKey  key = new NamespacedKey(instance, "dcrolesPermission");

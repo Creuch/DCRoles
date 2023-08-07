@@ -1,5 +1,6 @@
 package me.creuch.dcroles.inventory.builderinventory;
 
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.TextHandling;
 import me.creuch.dcroles.inventory.Items;
@@ -24,8 +25,6 @@ public class BInventory implements InventoryHolder {
     private me.creuch.dcroles.TextHandling TextHandling;
     private static int activeItem;
     private Items GetItem;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
     private static HashMap<String, String> modification;
 
     public Inventory getUpdatedInventory() {
@@ -78,15 +77,14 @@ public class BInventory implements InventoryHolder {
     public @NotNull Inventory getInventory() {
         TextHandling = new TextHandling(instance);
         GetItem = new Items(instance);
-        config = instance.getMainConfig();
-        langConfig = instance.getLangConfig();
+        Config config = new Config(instance);
         Inventory inventory = Bukkit.createInventory(
                 this,
-                config.getInt("gui.size"),
+                Integer.parseInt(config.getValue("mainConfig", "gui.size")),
                 TextHandling.getFormatted("<#0034FF>&lI<#003BFF>&ln<#0042FF>&lv<#0049FF>&le<#004FFF>&ln<#0056FF>&lt<#005DFF>&lo<#0064FF>&lr<#006BFF>&ly <#0072FF>&lB<#0079FF>&lu<#0080FF>&li<#0086FF>&ll<#008DFF>&ld<#0094FF>&le<#009BFF>&lr")
         );
         // Set config items
-        for (String slot : config.getConfigurationSection("gui.items").getKeys(false)) {
+        for (String slot : config.getMainConfig().getConfigurationSection("gui.items").getKeys(false)) {
             ItemStack itemStack = GetItem.fromConfig("gui.items." + slot, true);
             inventory.setItem(Integer.parseInt(slot), itemStack);
         }

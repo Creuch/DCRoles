@@ -13,17 +13,19 @@ public class TextHandling {
 
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private final DCRoles instance;
-    private YamlConfiguration langConfig;
-
     public TextHandling(DCRoles instance) {
         this.instance = instance;
     }
 
     public Component getFormatted(String message) {
-        if(instance.getPlayer() != null) {
-            message = "" + replaceColors(replacePlaceholders(message));
+        try {
+            if (instance.getPlayer() != null) {
+                message = replaceColors(replaceColors(replacePlaceholders(message)));
+            }
+            return miniMessage.deserialize(replaceColors(replaceColors(message)));
+        } catch (NullPointerException e) {
+            return miniMessage.deserialize(replaceColors("{P}&c Pusta wiadomość! Zgłoś to administracji"));
         }
-        return miniMessage.deserialize(replaceColors(replaceColors(message)));
     }
 
     public String replaceDiscordPlaceholders(String pName, Member member, String message) {
@@ -34,7 +36,7 @@ public class TextHandling {
         instance.setPlayer(Bukkit.getOfflinePlayer(pName));
         HashMap<String, String> userData = Database.getUserData();
         instance.setPlayer(null);
-        if(userData.get("exists").equalsIgnoreCase("true")) {
+        if(userData != null && userData.get("exists").equalsIgnoreCase("true")) {
             message = message.replace("{CODE}", userData.get("code"));
             message = message.replace("{ROLE}", userData.get("role"));
             message = message.replace("{USED}", userData.get("used"));
@@ -43,20 +45,21 @@ public class TextHandling {
     }
 
     public String replacePlaceholders(String message) {
+        Config config = new Config(instance);
         Database Database = new Database(instance);
-        langConfig = instance.getLangConfig();
         HashMap<String, String> userData = Database.getUserData();
-        assert userData != null;
-        message = message.replace("{USER}", "" + instance.getPlayer().getName());
-        message = message.replace("{CODE}", "" + userData.get("code"));
-        message = message.replace("{ROLE}", "" + userData.get("role").replace("default", "" + langConfig.getString("replacement.defaultRole")));
-        message = message.replace("{USED}", "" + userData.get("used"));
+        if(userData != null) {
+            message = message.replace("{USER}", "" + instance.getPlayer().getName());
+            message = message.replace("{CODE}", "" + userData.get("code"));
+            message = message.replace("{ROLE}", "" + userData.get("role").replace("default", "" + config.getValue("langConfig", "replacement.defaultRole")));
+            message = message.replace("{USED}", "" + userData.get("used"));
+        }
         return message;
     }
 
     // Replace vanilla coloring to MiniMessage's one
     public String replaceColors(String message) {
-        langConfig = instance.getLangConfig();
+        Config config = new Config(instance);
         message = message.replace("§", "&7");
         message = message.replace("&0", "<reset><black>");
         message = message.replace("&1", "<reset><dark_blue>");
@@ -79,7 +82,7 @@ public class TextHandling {
         message = message.replace("&n", "<u>");
         message = message.replace("&o", "<italic>");
         message = message.replace("&r", "<reset>");
-        message = message.replace("{P}", "" + langConfig.getString("prefix"));
+        message = message.replace("{P}", config.getValue("langConfig", "prefix"));
         return message;
     }
 

@@ -3,6 +3,7 @@ package me.creuch.dcroles.commands;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.Database;
 import me.creuch.dcroles.TextHandling;
+import me.creuch.dcroles.Config;
 import me.creuch.dcroles.inventory.codemanageinventory.CMInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -26,8 +27,7 @@ public class DCMCode implements CommandExecutor, TabCompleter {
     private final DCRoles instance;
     private Database Database;
     private TextHandling TextHandling;
-    private YamlConfiguration config;
-    private YamlConfiguration langConfig;
+    private Config config;
 
     public DCMCode(DCRoles plugin) {
         this.instance = plugin;
@@ -38,8 +38,8 @@ public class DCMCode implements CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("dcmcode")) {
             Database = new Database(instance);
             TextHandling = new TextHandling(instance);
-            config = instance.getMainConfig();
-            langConfig = instance.getLangConfig();
+            config = new Config(instance);
+            YamlConfiguration yamlConfig = (YamlConfiguration) instance.getConfig();
             if (commandSender instanceof HumanEntity) {
                 if (strings.length == 0 || strings.length == 1 && strings[0].equalsIgnoreCase(commandSender.getName())) {
                     if (commandSender.hasPermission("dcr.dcmcode.self")) {
@@ -47,46 +47,46 @@ public class DCMCode implements CommandExecutor, TabCompleter {
                         CMInventory inventory = new CMInventory(instance, (Player) commandSender);
                         ((HumanEntity) commandSender).openInventory(inventory.getInventory());
                     } else {
-                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
+                        commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.noPermission")));
                     }
                 } else if(strings.length > 1 && strings[1].equalsIgnoreCase("setRole")) {
                     if(commandSender.hasPermission("dcr.dcmcode.others")) {
                         if (strings.length >= 3) {
                             instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
-                            if (Database.getUserData().get("exists") == "true") {
-                                if(config.getConfigurationSection("roles").getKeys(false).contains(strings[2]) || strings[2].equalsIgnoreCase("default")) {
+                            if (Database.getUserData().get("exists").equals("true")) {
+                                if(yamlConfig.getConfigurationSection("roles").getKeys(false).contains(strings[2]) || strings[2].equalsIgnoreCase("default")) {
                                     HashMap<String, String> userData = new HashMap<>();
                                     userData.put("exists", "true");
                                     userData.put("role", strings[2]);
                                     Database.setUserData(userData);
-                                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.successRoleGive")));
+                                    commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.successRoleGive")));
                                 } else {
-                                    commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.invalidRole")));
+                                    commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.invalidRole")));
                                 }
                             } else {
-                                commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
+                                commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.playerNotFound")));
                             }
                         } else {
-                            commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.invalidRole")));
+                            commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.invalidRole")));
                         }
                     } else {
-                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
+                        commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.noPermission")));
                     }
                 } else {
                     if (commandSender.hasPermission("dcr.dcmcode.others")) {
                         instance.setPlayer(Bukkit.getOfflinePlayer(strings[0]));
-                        if(Database.getUserData() != null && Database.getUserData().get("exists") == "true") {
+                        if(Database.getUserData() != null && Database.getUserData().get("exists").equals("true")) {
                             CMInventory inventory = new CMInventory(instance, (Player) commandSender);
                             ((HumanEntity) commandSender).openInventory(inventory.getInventory());
                         } else {
-                            commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.playerNotFound")));
+                            commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.playerNotFound")));
                         }
                     } else {
-                        commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.noPermission")));
+                        commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.noPermission")));
                     }
                 }
             } else {
-                commandSender.sendMessage(TextHandling.getFormatted(langConfig.getString("minecraft.user.onlyPlayerCommand")));
+                commandSender.sendMessage(TextHandling.getFormatted(config.getValue("langConfig", "minecraft.user.onlyPlayerCommand")));
             }
         }
         return true;
@@ -95,7 +95,8 @@ public class DCMCode implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         List<String> tabArgs = new ArrayList<>();
-        config = instance.getMainConfig();
+        config = new Config(instance);
+        YamlConfiguration yamlConfig = (YamlConfiguration) instance.getConfig();
         if(commandSender.hasPermission("dcr.dcmcode.others")) {
             if(strings.length == 1) {
                 for(OfflinePlayer p : Bukkit.getOfflinePlayers()) {
@@ -107,7 +108,7 @@ public class DCMCode implements CommandExecutor, TabCompleter {
             }
             if(strings.length == 3) {
                 tabArgs.add("default");
-                tabArgs.addAll(config.getConfigurationSection("roles").getKeys(false));
+                tabArgs.addAll(yamlConfig.getConfigurationSection("roles").getKeys(false));
             }
             return tabArgs;
         }

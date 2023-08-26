@@ -1,111 +1,118 @@
 package me.creuch.dcroles;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.ExtensionMethod;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
+@ExtensionMethod({java.lang.String.class, TextFormat.class})
+@FieldDefaults(level=AccessLevel.PRIVATE)
 public class Config {
 
     public Config(DCRoles instance) {
         this.instance = instance;
+        this.textFormat = instance.getTextFormat();
     }
-
-    private final DCRoles instance;
-    private TextHandling textHandling;
-    // Config files
-    private static YamlConfiguration mainConfig;
-    private static YamlConfiguration langConfig;
-
-    public YamlConfiguration getMainConfig() {
-        return mainConfig;
-    }
-
-    public YamlConfiguration getLangConfig() {
-        return langConfig;
-    }
-
-    public String getValue(String configType, String path) {
-        textHandling = new TextHandling(instance);
-        String value = null;
-        if(configType.equalsIgnoreCase("mainConfig")) {
-            value = mainConfig.getString(path);
-            if(value == null) {
-                Bukkit.getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wysłano &c&lpustą&c wartość &7(" + path + ")"));
-                YamlConfiguration originalMainConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("config.yml")));
-                value = originalMainConfig.getString(path);
-                if(value == null) {
-                    value = "null";
-                }
-            }
-        } else if(configType.equalsIgnoreCase("langConfig")) {
-            value = langConfig.getString(path);
-            if(value == null) {
-                Bukkit.getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wysłano &c&lpustą&c wartość &7(" + path + ")"));
-                YamlConfiguration originalLangConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("lang.yml")));
-                value = originalLangConfig.getString(path);
-                if(value == null) {
-                    value = "null";
-                }
-            }
-        }
-        return value;
-    }
-
-    public List<String> getList(String configType, String path) {
-        textHandling = new TextHandling(instance);
-        List<String> value = null;
-        if(configType.equalsIgnoreCase("mainConfig")) {
-            value = mainConfig.getStringList(path);
-            if(value.isEmpty()) {
-                Bukkit.getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wysłano &c&lpustą&c wartość &7(" + path + ")"));
-                YamlConfiguration originalMainConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("config.yml")));
-                value = originalMainConfig.getStringList(path);
-                if(value.isEmpty()) {
-                    value.add("null");
-                }
-            }
-        } else if(configType.equalsIgnoreCase("langConfig")) {
-            value = langConfig.getStringList(path);
-            if(value.isEmpty()) {
-                Bukkit.getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wysłano &c&lpustą&c wartość &7(" + path + ")"));
-                YamlConfiguration originalLangConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("lang.yml")));
-                value = originalLangConfig.getStringList(path);
-                if(value.isEmpty()) {
-                    value.add("null");
-                }
-            }
-        }
-        return value;
-    }
+    final DCRoles instance;
+    TextFormat textFormat;
+    @Setter List<File> configFiles = new ArrayList<>();
+    @Getter YamlConfiguration mainConfig, guiConfig, langConfig;
 
     public void loadConfigs() {
-        textHandling = new TextHandling(instance);
-        if (!new File(instance.getDataFolder(), "config.yml").exists()) {
-            instance.saveResource("config.yml", true);
+        if(configFiles.size() > 0) {
+            for(File file : configFiles) {
+                if(!file.exists()) {
+                    instance.saveResource(file.getName(), true);
+                    switch (file.getName()) {
+                        case "config.yml":
+                            mainConfig = YamlConfiguration.loadConfiguration(new File("config.yml"));
+                        case "guis.yml":
+                            guiConfig = YamlConfiguration.loadConfiguration(new File("guis.yml"));
+                        case "lang.yml":
+                            langConfig = YamlConfiguration.loadConfiguration(new File("lang.yml"));
+                    }
+                    instance.getServer().sendMessage(("{P}&7 Stworzono config&f " + file.getName()).getFormatted());
+                }
+            }
         }
-        if (!new File(instance.getDataFolder(), "lang.yml").exists()) {
-            instance.saveResource("lang.yml", true);
-        }
-        mainConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), "config.yml"));
-        langConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), "lang.yml"));
+
+
     }
 
-    public void checkNulls() {
-        YamlConfiguration originalMainConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("config.yml")));
-        YamlConfiguration originalLangConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource("lang.yml")));
-        for (String path : originalMainConfig.getKeys(true)) {
-            if (mainConfig.get(path) == null && !path.contains("gui.items")) {
-                Bukkit.getServer().getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wartość &7" + path + "&c w &7config.yml&c nie istnieje!"));
+    public void checkForNulls() {
+        for(File file : configFiles) {
+            YamlConfiguration originalConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource(file.getName())));
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(file.getName()));
+            for (String path : originalConfig.getKeys(true)) {
+                if (config.get(path) == null && !path.contains("gui")) {
+                     Bukkit.getServer().getConsoleSender().sendMessage(("{P}&c Wartość &7" + path + "&c w &7config.yml&c nie istnieje!").getFormatted());
+                }
             }
-        }
-        for (String path : originalLangConfig.getKeys(true)) {
-            if (langConfig.get(path) == null) {
-                Bukkit.getServer().getConsoleSender().sendMessage(textHandling.getFormatted("{P}&c Wartość &7" + path + "&c w &7lang.yml&c nie istnieje!"));
-            }
+
         }
     }
+
+    public void saveConfig(String config) {
+        try {
+            FileConfiguration fileConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), config));
+            fileConfig.save(new File(instance.getDataFolder(), config));
+            loadConfigs();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ConfigurationSection getSection(String config, String path) {
+        FileConfiguration fileConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), config));
+        ConfigurationSection section = fileConfig.getConfigurationSection(path);
+        if(section == null || section.getKeys(true).isEmpty()) {
+            section = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource(config))).getConfigurationSection(path);
+            // Send null value message (used original config)
+            if(section == null || section.getKeys(true).isEmpty()) {
+                return null;
+            }
+        }
+        return section;
+    }
+
+    public List<String> getList(String config, String path) {
+        FileConfiguration fileConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), config));
+        List<String> list = fileConfig.getStringList(path);
+        if(list.isEmpty()) {
+            list = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource(config))).getStringList(path);
+            // Send null value message (used original config)
+            if(list.isEmpty()) {
+                list.add("null");
+            }
+        }
+        return list;
+    }
+
+    public String getValue(String config, String path) {
+        FileConfiguration fileConfig = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), config));
+        String value = fileConfig.getString(path);
+        if(value == null) {
+            value = YamlConfiguration.loadConfiguration(new InputStreamReader(instance.getResource(config))).getString(path);
+            // Send null value message (used original config)
+            if(value == null) {
+                value = "null";
+            }
+        }
+        return value;
+    }
+
+
+
 
 }

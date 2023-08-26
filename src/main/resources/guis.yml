@@ -1,0 +1,49 @@
+fillerItem:
+  material: GRAY_STAINED_GLASS_PANE
+  name: "&7 "
+  lore:
+
+guis:
+  codeManage:
+    title: "<#008DFF>&lD<#009BFF>&lC<#00A9FF>&lM<#00B7FF>&lC<#00C4FF>&lo<#00D2FF>&ld<#00E0FF>&le &8» &9{USER}"
+    size: 36
+    items:
+      '11':
+        type: REMOVE_USER
+        # Set to "NONE" for no permission requirement
+        # REMOVE_USER, NEW_CODE, RESET_USAGE, SET_RANK, INFO_ITEM
+        permission: dcr.gui.admin
+        material: LAVA_BUCKET
+        name: <!italic><bold><red>Usuń użytkownika
+        lore:
+          - <!italic><dark_gray>» </dark_gray><gray>Usuwa dane użytkownika z bazy danych
+      '13':
+        type: INFO_ITEM
+        permission: dcr.gui.info
+        material: PLAYER_HEAD
+        name: <!italic><bold><white>{USER}
+        lore:
+          - '<!italic><dark_gray>» </dark_gray><gray>Kod: </gray><white>{CODE}'
+          - '<!italic><dark_gray>» </dark_gray><gray>Wykorzystano: </gray><white>{USED}'
+          - '<!italic><dark_gray>» </dark_gray><gray>Ranga: </gray><white>{ROLE}'
+      '15':
+        type: NEW_CODE
+        permission: dcr.gui.admin
+        material: ENDER_PEARL
+        name: <!italic><bold><blue>Nowy kod
+        lore:
+          - <!italic><dark_gray>» </dark_gray><gray>Tworzy nowy kod dla użytkownika
+      '21':
+        type: RESET_USAGE
+        permission: dcr.gui.admin
+        material: COMPASS
+        name: <!italic><bold><light_purple>Zresetuj użycie
+        lore:
+          - <!italic><dark_gray>» </dark_gray><gray>Resetuje użycie kodu użytkownika
+      '23':
+        type: SET_RANK
+        permission: dcr.gui.admin
+        material: SPRUCE_SIGN
+        name: <!italic><bold><gold>Ustaw rangę
+        lore:
+          - <!italic><dark_gray>» </dark_gray><gray>Ustawia rangę użytkownika

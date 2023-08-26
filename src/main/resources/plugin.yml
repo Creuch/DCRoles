@@ -2,34 +2,6 @@ name: DCRoles
 version: '${project.version}'
 main: me.creuch.dcroles.DCRoles
 api-version: '1.19'
-website: https://wolfservers.pl/
 softdepend: [PlaceholderAPI, BKCommonLib]
 authors:
   - _Creuch
-
-permissions:
-  dcr.*:
-    default: op
-    children: [dcr.dcreload, dcr.dcmgui, dcr.dcmcode.self, dcr.dcmcode.others, dcr.dccode.self, dcr.dccode.others]
-  dcr.dcreload:
-    default: op
-  dcr.dcmgui:
-    default: op
-  dcr.dcmcode.self:
-    default: op
-  dcr.dcmcode.others:
-    default: op
-  dcr.dccode.self:
-    default: true
-  dcr.dccode.others:
-    default: op
-
-commands:
-  dcmgui:
-    description: "Edit inventory"
-  dcmcode:
-    description: "Manage user's code"
-  dcreload:
-    description: "Reloads the plugin"
-  dccode:
-    description: "Get user's code"
